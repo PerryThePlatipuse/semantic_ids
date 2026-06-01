@@ -13,6 +13,7 @@ TEST_INTERVAL = 7 * 24 * 60 * 60 # one week
 def download(dst_dir):
     from datasets import load_dataset
 
+    os.makedirs(dst_dir, exist_ok=True)
     ds = load_dataset("yandex/yambda", data_dir="flat/5b", data_files="likes.parquet")
     ds = ds['train'].to_polars()
     ds.write_parquet(os.path.join(dst_dir, 'interactions.parquet'))
@@ -23,10 +24,23 @@ def download(dst_dir):
     liked_items = ds.select('item_id').unique()
     filtered_embeddings = embeddings \
         .join(liked_items, on='item_id', how='semi') \
-        .select('item_id', pl.col('embed').cast(pl.Array(pl.Float32, (128,)))) \
-        .write_parquet(os.path.join(dst_dir, 'embeddings.parquet'))
+        .select('item_id', pl.col('embed').cast(pl.Array(pl.Float32, (128,))))
+    filtered_embeddings.write_parquet(os.path.join(dst_dir, 'embeddings.parquet'))
     
     return ds, filtered_embeddings
+
+
+def download_metadata(dst_dir):
+    from datasets import load_dataset
+
+    os.makedirs(dst_dir, exist_ok=True)
+    outputs = {}
+    for name in ("artist_item_mapping", "album_item_mapping"):
+        ds = load_dataset("yandex/yambda", data_dir="", data_files=f"{name}.parquet")
+        df = ds["train"].to_polars()
+        df.write_parquet(os.path.join(dst_dir, f"{name}.parquet"))
+        outputs[name] = df
+    return outputs
 
 
 def main(data_dir, dst_dir, core_threshold=16, holdout_frac=0.1, seed=42, topk_head=30000):

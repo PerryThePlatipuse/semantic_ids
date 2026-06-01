@@ -69,10 +69,32 @@ class Game(nn.Module):
     
 
 class VarlenGame(nn.Module):
-    def __init__(self, encoder : Encoder, decoder : Decoder):
+    def __init__(
+            self,
+            encoder: Encoder,
+            decoder: Decoder,
+            metadata_mode=None,
+            num_artist_classes=None,
+            num_album_classes=None,
+            artist_loss_weight=0.0,
+            album_loss_weight=0.0,
+    ):
         super().__init__()
         self.encoder = encoder
         self.decoder = decoder
+        self.metadata_mode = metadata_mode
+        self.artist_loss_weight = float(artist_loss_weight)
+        self.album_loss_weight = float(album_loss_weight)
+
+        if metadata_mode not in (None, "aux", "prefix"):
+            raise ValueError("metadata_mode must be one of: None, 'aux', 'prefix'")
+        if metadata_mode is not None:
+            if num_artist_classes is None or int(num_artist_classes) <= 0:
+                raise ValueError("num_artist_classes must be positive when metadata supervision is enabled")
+            if num_album_classes is None or int(num_album_classes) <= 0:
+                raise ValueError("num_album_classes must be positive when metadata supervision is enabled")
+            self.artist_head = nn.Linear(encoder.hidden_size, int(num_artist_classes))
+            self.album_head = nn.Linear(encoder.hidden_size, int(num_album_classes))
 
         self.register_buffer(
             "logV",
@@ -82,7 +104,51 @@ class VarlenGame(nn.Module):
 
         self.loss_fn = lambda a, b: F.mse_loss(a, b, reduction='none').sum(dim=1)
 
-    def forward(self, x, tau, length_cost, beta=None, free_bits=None):
+    def _metadata_loss(self, message, smoothed_alive, artist_labels, album_labels):
+        if self.metadata_mode is None:
+            return None, {}
+        if artist_labels is None or album_labels is None:
+            raise ValueError("artist_labels and album_labels are required for metadata supervision")
+
+        codebook_embeddings = torch.stack([
+            message[:, step].float() @ self.encoder._get_codebook(step).float()
+            for step in range(self.encoder.maxlen)
+        ], dim=1)
+
+        if self.metadata_mode == "aux":
+            metadata_repr = (smoothed_alive[..., None] * codebook_embeddings).sum(dim=1)
+            artist_repr = metadata_repr
+            album_repr = metadata_repr
+        else:
+            artist_repr = codebook_embeddings[:, 0]
+            album_repr = codebook_embeddings[:, :min(2, self.encoder.maxlen)].sum(dim=1)
+
+        artist_logits = self.artist_head(artist_repr)
+        album_logits = self.album_head(album_repr)
+        artist_loss = F.cross_entropy(artist_logits, artist_labels)
+        album_loss = F.cross_entropy(album_logits, album_labels)
+        metadata_loss = self.artist_loss_weight * artist_loss + self.album_loss_weight * album_loss
+
+        with torch.no_grad():
+            metrics = {
+                "metadata_loss": metadata_loss.detach(),
+                "artist_loss": artist_loss.detach(),
+                "album_loss": album_loss.detach(),
+                "artist_accuracy": (artist_logits.argmax(dim=-1) == artist_labels).float().mean(),
+                "album_accuracy": (album_logits.argmax(dim=-1) == album_labels).float().mean(),
+            }
+        return metadata_loss, metrics
+
+    def forward(
+            self,
+            x,
+            tau,
+            length_cost,
+            beta=None,
+            free_bits=None,
+            artist_labels=None,
+            album_labels=None,
+    ):
         with torch.autocast('cuda', torch.bfloat16):
             logits, message, length_logits, survival_logits = self.encoder(x, tau)
             receiver_output = self.decoder(message)
@@ -123,6 +189,14 @@ class VarlenGame(nn.Module):
                 loss = recon_loss + beta * (KL_vocab_term + KL_length_term)
             else:
                 loss = recon_loss
+            metadata_loss, metadata_metrics = self._metadata_loss(
+                message,
+                smoothed_alive,
+                artist_labels,
+                album_labels,
+            )
+            if metadata_loss is not None:
+                loss = loss + metadata_loss
 
             with torch.no_grad():
                 H_Z_given_X_total = (alive * H_Z_given_X).sum(dim=-1).mean()
@@ -154,6 +228,6 @@ class VarlenGame(nn.Module):
                 if beta is not None:
                     metrics['vocab_loss'] = beta * KL_vocab_term.detach()
                     metrics['length_loss'] = beta * KL_length_term.detach()
+                metrics.update(metadata_metrics)
                 
         return loss, metrics
-        

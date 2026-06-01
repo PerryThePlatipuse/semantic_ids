@@ -273,7 +273,8 @@ def run_eval(
 
     head_items_set = set(head_items_df["item_id"].to_list())
 
-    catalog_size = float(require(cfg, "eval.catalog_size"))
+    catalog_size_cfg = require(cfg, "eval.catalog_size")
+    catalog_size = float(catalog_size_cfg or processed_semantic_ids.height)
     k_list = require(cfg, "eval.k_list")
 
     metrics: Dict[str, float] = {}

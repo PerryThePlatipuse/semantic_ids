@@ -64,6 +64,24 @@ def main(cfg):
         embedding_table=fit_embeddings,
     )
 
+    metadata_cfg = cfg.get("metadata_supervision")
+    metadata_mode = None
+    artist_labels = None
+    album_labels = None
+    if metadata_cfg and metadata_cfg.get("enabled", True):
+        if not cfg["varlen"]:
+            raise ValueError("metadata supervision is currently supported only for VarLen dVAE")
+        metadata_mode = metadata_cfg["mode"]
+        artist_col = metadata_cfg.get("artist_col", "artist_cluster_id")
+        album_col = metadata_cfg.get("album_col", "album_cluster_id")
+        missing_cols = {artist_col, album_col} - set(fit_items.columns)
+        if missing_cols:
+            raise ValueError(f"fit items are missing metadata columns: {sorted(missing_cols)}")
+        if fit_items.select([artist_col, album_col]).null_count().row(0) != (0, 0):
+            raise ValueError("metadata supervision columns must not contain nulls")
+        artist_labels = fit_items[artist_col].to_torch().to(torch.long).to(device, non_blocking=True)
+        album_labels = fit_items[album_col].to_torch().to(torch.long).to(device, non_blocking=True)
+
     encoder = Encoder(
         vocab_size=cfg["vocab_size"],
         embed_dim=cfg["embed_dim"],
@@ -84,7 +102,19 @@ def main(cfg):
         dropout=cfg["dropout"],
         num_layers=cfg["decoder_num_layers"],
     )
-    graph = (VarlenGame(encoder, decoder) if cfg["varlen"] else Game(encoder, decoder)).to(device)
+    if cfg["varlen"]:
+        graph = VarlenGame(
+            encoder,
+            decoder,
+            metadata_mode=metadata_mode,
+            num_artist_classes=metadata_cfg.get("num_artist_classes") if metadata_cfg else None,
+            num_album_classes=metadata_cfg.get("num_album_classes") if metadata_cfg else None,
+            artist_loss_weight=metadata_cfg.get("artist_loss_weight", 0.0) if metadata_cfg else 0.0,
+            album_loss_weight=metadata_cfg.get("album_loss_weight", 0.0) if metadata_cfg else 0.0,
+        )
+    else:
+        graph = Game(encoder, decoder)
+    graph = graph.to(device)
     graph = torch.compile(graph, dynamic=False)
     graph.train()
 
@@ -117,6 +147,8 @@ def main(cfg):
     total_steps = cfg["num_epochs"] * steps_per_epoch
     tokens_passed = 0
     global_step = 0
+    metadata_metric_totals = {}
+    metadata_metric_steps = 0
 
     pbar = tqdm(
         total=total_steps,
@@ -158,6 +190,9 @@ def main(cfg):
                 )
                 if cfg["varlen"]:
                     kwargs["length_cost"] = length_cost_t
+                if metadata_mode is not None:
+                    kwargs["artist_labels"] = artist_labels.index_select(0, batch.tokens)
+                    kwargs["album_labels"] = album_labels.index_select(0, batch.tokens)
 
                 loss, metrics = graph(**kwargs)
                 loss.backward()
@@ -174,6 +209,10 @@ def main(cfg):
 
             tokens_passed += int(getattr(batch, "size", 0))
             global_step += 1
+            if metadata_mode is not None:
+                metadata_metric_steps += 1
+                for name in ("metadata_loss", "artist_loss", "album_loss", "artist_accuracy", "album_accuracy"):
+                    metadata_metric_totals[name] = metadata_metric_totals.get(name, 0.0) + float(metrics[name])
             pbar.update(1)
 
             if writer is not None and cfg["eval_every_steps"] > 0 and (global_step % cfg["eval_every_steps"] == 0):
@@ -225,12 +264,21 @@ def main(cfg):
                 per_step=cfg["per_step"],
             )
 
+    if metadata_mode is not None:
+        metrics["training_metadata_supervision"] = {
+            "mode": metadata_mode,
+            **{
+                name: value / max(metadata_metric_steps, 1)
+                for name, value in metadata_metric_totals.items()
+            },
+        }
+
     # ---- Saving: unified under out_dir in train_holdout mode ----
     if mode == "train_holdout":
         out_dir = cfg["out_dir"]
         os.makedirs(out_dir, exist_ok=True)
 
-        metrics_path = os.path.join(out_dir, "metrics.json")
+        metrics_path = os.path.join(out_dir, cfg.get("metrics_filename", "metrics.json"))
         sids_path = os.path.join(out_dir, "sids.parquet")
 
         with open(metrics_path, "w", encoding="utf-8") as f:

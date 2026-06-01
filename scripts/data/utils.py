@@ -12,7 +12,8 @@ def preprocess_data(
         holdout_frac: float = 0.1,
         seed: int = 42,
         verbose: bool = False,
-        topk_head: int = 30_000
+        topk_head: int = 30_000,
+        max_core_items: int = None,
 ):
     os.makedirs(dst_dir, exist_ok=True)
     
@@ -52,6 +53,8 @@ def preprocess_data(
         print(f"Train items: {train_items.height:,}")
 
     core_items = train_items.filter(pl.col("train_count") >= core_threshold)
+    if max_core_items is not None:
+        core_items = core_items.head(max_core_items)
 
     if verbose:
         print(f"Core items (count >= {core_threshold}): {core_items.height:,}")

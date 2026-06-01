@@ -138,3 +138,51 @@ Each experiment can be reproduced by running the corresponding training script w
 * We provide actual paper evaluation results under `results/` for reference.
 
 ---
+
+## 5. Course project: artist/album-aware Yambda SIDs
+
+The course-project extension compares the original VarLen dVAE against auxiliary
+artist/album loss and prefix-level artist/album supervision. It uses a reduced
+Yambda subset and hashed metadata classes so the experiment fits a single-A100
+budget.
+
+Download the original Yambda inputs and metadata:
+
+```python
+from scripts.data.yambda import download, download_metadata
+
+download(dst_dir="./data/yambda")
+download_metadata(dst_dir="./data/yambda")
+```
+
+Build the subset and attach artist/album labels:
+
+```bash
+python3 -m scripts.project.build_yambda_subset
+python3 -m scripts.project.build_artist_album_metadata
+```
+
+Before a full run, validate the original pipeline with the tiny configs:
+
+```bash
+python3 -m scripts.train_dvae --config configs/project/original_varlen_dvae_tiny.yaml
+python3 -m scripts.train_seqrec --config configs/project/seqrec_original_tiny.yaml
+```
+
+Run one method end to end:
+
+```bash
+python3 -m scripts.project.run_experiment --method original
+python3 -m scripts.project.run_experiment --method aux
+python3 -m scripts.project.run_experiment --method prefix
+```
+
+Each runner accepts `--stages dvae,purity,seqrec`, so expensive stages can be
+rerun separately. Collect the final comparison table with:
+
+```bash
+python3 -m scripts.project.collect_results
+```
+
+Project configs live under `configs/project/`. Outputs are written to
+`results/project/<method>/`.
