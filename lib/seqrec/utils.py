@@ -6,7 +6,22 @@ from collections import defaultdict
        
 import torch
 import torch.nn.functional as F
-from torch.utils.tensorboard import SummaryWriter
+
+
+class _NullSummaryWriter:
+    def add_scalar(self, *args, **kwargs):
+        return None
+
+
+def _make_summary_writer(log_dir):
+    if log_dir is None:
+        return _NullSummaryWriter()
+    try:
+        from torch.utils.tensorboard import SummaryWriter
+        return SummaryWriter(log_dir=log_dir)
+    except Exception as e:
+        print(f"TensorBoard disabled: {type(e).__name__}: {e}", flush=True)
+        return _NullSummaryWriter()
 
 
 def validate(model, dataloader, steps=None, verbose=False):
@@ -51,7 +66,7 @@ def train_loop(
 ):
     graph.train()
 
-    writer = SummaryWriter(log_dir=log_dir)
+    writer = _make_summary_writer(log_dir)
         
     train_dataloader_iterator = iter(train_dataloader)
     batch = next(train_dataloader_iterator)
