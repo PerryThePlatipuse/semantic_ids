@@ -98,7 +98,7 @@ def main(args):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src-dir", default="./data/yambda")
-    ap.add_argument("--data-dir", default="./data/project/yambda")
+    ap.add_argument("--data-dir", default="./data/RQ_album_artist_anchor/yambda")
     ap.add_argument("--artist-mapping")
     ap.add_argument("--album-mapping")
     ap.add_argument("--num-artist-classes", type=int, default=512)

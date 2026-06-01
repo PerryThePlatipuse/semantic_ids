@@ -1,38 +1,29 @@
-data_dir: "./data/project/yambda"
+data_dir: "./data/RQ_album_artist_anchor/yambda"
 train_interactions_file: "dvae_train_interactions.parquet"
 holdout_interactions_file: "dvae_holdout_interactions.parquet"
 
 device: "cuda"
 seed: 42
 mode: "train_holdout"
-out_dir: "./results/project/aux"
+out_dir: "./results/RQ_album_artist_anchor/original_tiny"
 metrics_filename: "dvae_metrics.json"
 
-num_epochs: 3
-vocab_size: 4096
+num_epochs: 1
+vocab_size: 256
 embed_dim: 128
 hidden_size: 128
-maxlen: 5
+maxlen: 3
 shared_codebooks: true
 init_logit_scale: 5.0
 init_gamma: 0.2
 dropout: 0.1
 codebook_dropout: 0.1
 decoder_hidden_mul: 2
-decoder_num_layers: 2
+decoder_num_layers: 1
 varlen: true
 length_cost: 3.0
 
-metadata_supervision:
-  mode: "aux"
-  artist_col: "artist_cluster_id"
-  album_col: "album_cluster_id"
-  num_artist_classes: 512
-  num_album_classes: 1024
-  artist_loss_weight: 0.03
-  album_loss_weight: 0.03
-
-batch_num_tokens: 8192
+batch_num_tokens: 512
 shuffle: true
 drop_last: true
 lr: 1e-3
@@ -43,12 +34,12 @@ beta_start: 0.0
 beta_end: 0.002
 free_bits: 2.0
 
-train_sample_frac_for_eval: 0.1
+train_sample_frac_for_eval: 0.05
 log_every_steps: 20
-eval_every_steps: 500
+eval_every_steps: 0
 eval_detail: false
 enable_progress_bar: true
 progress_bar_every: 20
-eval_batch_size: 512
+eval_batch_size: 128
 per_step: true
 expected_holdout_frac: 0.1

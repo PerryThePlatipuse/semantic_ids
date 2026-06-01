@@ -106,7 +106,7 @@ def main(args):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src-dir", default="./data/yambda")
-    ap.add_argument("--dst-dir", default="./data/project/yambda")
+    ap.add_argument("--dst-dir", default="./data/RQ_album_artist_anchor/yambda")
     ap.add_argument("--num-users", type=int, default=5000)
     ap.add_argument("--max-interactions", type=int, default=3_000_000)
     ap.add_argument("--max-core-items", type=int, default=20_000)

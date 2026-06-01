@@ -7,16 +7,16 @@ import sys
 
 METHODS = {
     "original": {
-        "dvae": "configs/project/original_varlen_dvae.yaml",
-        "seqrec": "configs/project/seqrec_original.yaml",
+        "dvae": "configs/RQ_album_artist_anchor/original_varlen_dvae.yaml",
+        "seqrec": "configs/RQ_album_artist_anchor/seqrec_original.yaml",
     },
     "aux": {
-        "dvae": "configs/project/aux_artist_album_loss.yaml",
-        "seqrec": "configs/project/seqrec_aux.yaml",
+        "dvae": "configs/RQ_album_artist_anchor/aux_artist_album_loss.yaml",
+        "seqrec": "configs/RQ_album_artist_anchor/seqrec_aux.yaml",
     },
     "prefix": {
-        "dvae": "configs/project/prefix_artist_album_loss.yaml",
-        "seqrec": "configs/project/seqrec_prefix.yaml",
+        "dvae": "configs/RQ_album_artist_anchor/prefix_artist_album_loss.yaml",
+        "seqrec": "configs/RQ_album_artist_anchor/seqrec_prefix.yaml",
     },
 }
 
@@ -28,7 +28,7 @@ def _run(*args):
 
 def main(args):
     method_cfg = METHODS[args.method]
-    out_dir = os.path.join("results", "project", args.method)
+    out_dir = os.path.join("results", "RQ_album_artist_anchor", args.method)
     stages = args.stages.split(",")
     unknown = set(stages) - {"dvae", "purity", "seqrec"}
     if unknown:
@@ -40,7 +40,7 @@ def main(args):
         _run(
             sys.executable,
             "-m",
-            "scripts.project.analyze_prefix_purity",
+            "scripts.RQ_album_artist_anchor.analyze_prefix_purity",
             "--sids",
             os.path.join(out_dir, "sids.parquet"),
             "--output",

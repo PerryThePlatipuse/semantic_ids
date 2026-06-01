@@ -1,11 +1,11 @@
-data_dir: "./data/project/yambda"
+data_dir: "./data/RQ_album_artist_anchor/yambda"
 train_interactions_file: "dvae_train_interactions.parquet"
 holdout_interactions_file: "dvae_holdout_interactions.parquet"
 
 device: "cuda"
 seed: 42
 mode: "train_holdout"
-out_dir: "./results/project/original"
+out_dir: "./results/RQ_album_artist_anchor/original"
 metrics_filename: "dvae_metrics.json"
 
 num_epochs: 3

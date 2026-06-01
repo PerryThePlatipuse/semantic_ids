@@ -158,31 +158,31 @@ download_metadata(dst_dir="./data/yambda")
 Build the subset and attach artist/album labels:
 
 ```bash
-python3 -m scripts.project.build_yambda_subset
-python3 -m scripts.project.build_artist_album_metadata
+python3 -m scripts.RQ_album_artist_anchor.build_yambda_subset
+python3 -m scripts.RQ_album_artist_anchor.build_artist_album_metadata
 ```
 
 Before a full run, validate the original pipeline with the tiny configs:
 
 ```bash
-python3 -m scripts.train_dvae --config configs/project/original_varlen_dvae_tiny.yaml
-python3 -m scripts.train_seqrec --config configs/project/seqrec_original_tiny.yaml
+python3 -m scripts.train_dvae --config configs/RQ_album_artist_anchor/original_varlen_dvae_tiny.yaml
+python3 -m scripts.train_seqrec --config configs/RQ_album_artist_anchor/seqrec_original_tiny.yaml
 ```
 
 Run one method end to end:
 
 ```bash
-python3 -m scripts.project.run_experiment --method original
-python3 -m scripts.project.run_experiment --method aux
-python3 -m scripts.project.run_experiment --method prefix
+python3 -m scripts.RQ_album_artist_anchor.run_experiment --method original
+python3 -m scripts.RQ_album_artist_anchor.run_experiment --method aux
+python3 -m scripts.RQ_album_artist_anchor.run_experiment --method prefix
 ```
 
 Each runner accepts `--stages dvae,purity,seqrec`, so expensive stages can be
 rerun separately. Collect the final comparison table with:
 
 ```bash
-python3 -m scripts.project.collect_results
+python3 -m scripts.RQ_album_artist_anchor.collect_results
 ```
 
-Project configs live under `configs/project/`. Outputs are written to
-`results/project/<method>/`.
+Project configs live under `configs/RQ_album_artist_anchor/`. Outputs are written to
+`results/RQ_album_artist_anchor/<method>/`.

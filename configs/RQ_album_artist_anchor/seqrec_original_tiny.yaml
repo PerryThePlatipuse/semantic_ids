@@ -1,18 +1,18 @@
-data_dir: "./data/project/yambda"
-semantic_ids_path: "./results/project/original/sids.parquet"
+data_dir: "./data/RQ_album_artist_anchor/yambda"
+semantic_ids_path: "./results/RQ_album_artist_anchor/original_tiny/sids.parquet"
 test_interactions_path: "seqrec_test_sample_interactions.parquet"
 device: "cuda"
-summary_json: "./results/project/original/seqrec_summary.json"
+summary_json: "./results/RQ_album_artist_anchor/original_tiny/seqrec_summary.json"
 
 budget_mode: "tokens"
-history_budget: 128
+history_budget: 64
 flatten_codebooks: false
 append_unique_token: true
 
 train:
-  ideal_batch_size_tokens: 65536
-  device_batch_size: 64
-  depth: 4
+  ideal_batch_size_tokens: 4096
+  device_batch_size: 8
+  depth: 2
   adam_lr: 0.008
   muon_lr: 0.06
   weight_decay: 0.0
@@ -25,12 +25,12 @@ train:
   grad_clip: 0.0
 
 eval:
-  beam_size: 20
-  max_batch_tokens: 16384
-  max_batch_users: 512
-  max_candidates: 50
-  per_code_max_items: 10
-  k_list: [10, 50]
+  beam_size: 5
+  max_batch_tokens: 2048
+  max_batch_users: 128
+  max_candidates: 20
+  per_code_max_items: 5
+  k_list: [10]
   catalog_size: null
 
 min_item_count: 16

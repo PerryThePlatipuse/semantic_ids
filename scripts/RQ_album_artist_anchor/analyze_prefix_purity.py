@@ -81,7 +81,7 @@ def main(args):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--sids", required=True)
-    ap.add_argument("--metadata", default="./data/project/yambda/item_metadata.parquet")
+    ap.add_argument("--metadata", default="./data/RQ_album_artist_anchor/yambda/item_metadata.parquet")
     ap.add_argument("--output", required=True)
     ap.add_argument("--artist-col", default="artist_cluster_id")
     ap.add_argument("--album-col", default="album_cluster_id")

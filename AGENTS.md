@@ -48,7 +48,7 @@ notebooks/
   01_run_experiments.ipynb
   02_analyze_results.ipynb
 
-configs/project/
+configs/RQ_album_artist_anchor/
   original_varlen_dvae.yaml
   aux_artist_album_loss.yaml
   prefix_artist_album_loss.yaml
@@ -56,7 +56,7 @@ configs/project/
   seqrec_aux.yaml
   seqrec_prefix.yaml
 
-scripts/project/
+scripts/RQ_album_artist_anchor/
   build_yambda_subset.py
   build_artist_album_metadata.py
   run_experiment.py
@@ -71,10 +71,10 @@ Do not make notebooks the only reproducibility path. Notebooks may call scripts,
 Each method should produce:
 
 ```text
-results/project/<method>/sids.parquet
-results/project/<method>/dvae_metrics.json
-results/project/<method>/seqrec_summary.json
-results/project/<method>/prefix_purity.json
+results/RQ_album_artist_anchor/<method>/sids.parquet
+results/RQ_album_artist_anchor/<method>/dvae_metrics.json
+results/RQ_album_artist_anchor/<method>/seqrec_summary.json
+results/RQ_album_artist_anchor/<method>/prefix_purity.json
 ```
 
 Final comparison should include:

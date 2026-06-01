@@ -1,8 +1,8 @@
-data_dir: "./data/project/yambda"
-semantic_ids_path: "./results/project/prefix/sids.parquet"
+data_dir: "./data/RQ_album_artist_anchor/yambda"
+semantic_ids_path: "./results/RQ_album_artist_anchor/prefix/sids.parquet"
 test_interactions_path: "seqrec_test_sample_interactions.parquet"
 device: "cuda"
-summary_json: "./results/project/prefix/seqrec_summary.json"
+summary_json: "./results/RQ_album_artist_anchor/prefix/seqrec_summary.json"
 
 budget_mode: "tokens"
 history_budget: 128

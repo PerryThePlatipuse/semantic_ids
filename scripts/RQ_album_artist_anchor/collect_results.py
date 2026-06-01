@@ -71,5 +71,5 @@ def main(args):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--results-dir", default="./results/project")
+    ap.add_argument("--results-dir", default="./results/RQ_album_artist_anchor")
     main(ap.parse_args())

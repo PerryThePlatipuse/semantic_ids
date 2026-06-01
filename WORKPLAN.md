@@ -27,16 +27,16 @@ Deliverables:
 Acceptance check:
 
 ```bash
-python -m scripts.train_dvae --config configs/project/original_varlen_dvae_tiny.yaml
-python -m scripts.train_seqrec --config configs/project/seqrec_original_tiny.yaml
+python -m scripts.train_dvae --config configs/RQ_album_artist_anchor/original_varlen_dvae_tiny.yaml
+python -m scripts.train_seqrec --config configs/RQ_album_artist_anchor/seqrec_original_tiny.yaml
 ```
 
 ## Phase 1 — Yambda subset and metadata
 
 Deliverables:
 
-* `scripts/project/build_yambda_subset.py`
-* `scripts/project/build_artist_album_metadata.py`
+* `scripts/RQ_album_artist_anchor/build_yambda_subset.py`
+* `scripts/RQ_album_artist_anchor/build_artist_album_metadata.py`
 * Item table with:
 
 ```text
@@ -67,10 +67,10 @@ Use it to inspect counts, missing metadata, users, items, and split sizes.
 
 Deliverables:
 
-* `configs/project/original_varlen_dvae.yaml`
-* `configs/project/seqrec_original.yaml`
-* `results/project/original/sids.parquet`
-* `results/project/original/seqrec_summary.json`
+* `configs/RQ_album_artist_anchor/original_varlen_dvae.yaml`
+* `configs/RQ_album_artist_anchor/seqrec_original.yaml`
+* `results/RQ_album_artist_anchor/original/sids.parquet`
+* `results/RQ_album_artist_anchor/original/seqrec_summary.json`
 
 Recommended settings:
 
@@ -100,7 +100,7 @@ Use artist/album clusters if raw class count is too large.
 Deliverables:
 
 * Config: `aux_artist_album_loss.yaml`
-* Output: `results/project/aux/sids.parquet`
+* Output: `results/RQ_album_artist_anchor/aux/sids.parquet`
 * Metrics: `dvae_metrics.json`, `seqrec_summary.json`
 * Diagnostics: artist/album aux accuracy if cheap.
 
@@ -129,7 +129,7 @@ Avoid hard-coding raw artist or album IDs as mandatory SID tokens unless used on
 Deliverables:
 
 * Config: `prefix_artist_album_loss.yaml`
-* Output: `results/project/prefix/sids.parquet`
+* Output: `results/RQ_album_artist_anchor/prefix/sids.parquet`
 * Metrics: `dvae_metrics.json`, `seqrec_summary.json` if time allows.
 * Structural diagnostics are mandatory.
 
@@ -138,8 +138,8 @@ Deliverables:
 Create:
 
 ```text
-scripts/project/analyze_prefix_purity.py
-scripts/project/collect_results.py
+scripts/RQ_album_artist_anchor/analyze_prefix_purity.py
+scripts/RQ_album_artist_anchor/collect_results.py
 notebooks/02_analyze_results.ipynb
 ```
 
@@ -178,12 +178,12 @@ README must include exact commands or notebook entry point.
 Recommended reproducibility path:
 
 ```bash
-python scripts/project/build_yambda_subset.py
-python scripts/project/build_artist_album_metadata.py
-python scripts/project/run_experiment.py --method original
-python scripts/project/run_experiment.py --method aux
-python scripts/project/run_experiment.py --method prefix
-python scripts/project/collect_results.py
+python scripts/RQ_album_artist_anchor/build_yambda_subset.py
+python scripts/RQ_album_artist_anchor/build_artist_album_metadata.py
+python scripts/RQ_album_artist_anchor/run_experiment.py --method original
+python scripts/RQ_album_artist_anchor/run_experiment.py --method aux
+python scripts/RQ_album_artist_anchor/run_experiment.py --method prefix
+python scripts/RQ_album_artist_anchor/collect_results.py
 ```
 
 Notebook path is allowed:

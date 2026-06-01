@@ -310,4 +310,4 @@ if __name__ == "__main__":
 
     with open(args.config, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
-    main()
+    main(cfg)
