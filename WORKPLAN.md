@@ -7,6 +7,15 @@ Build a small reproducible experiment for artist/album-aware semantic IDs on Yam
 Main comparison:
 
 ```text
+Fixed dVAE
+vs Original VarLen dVAE
+vs Aux artist/album loss
+vs Prefix artist/album supervision
+```
+
+Metadata-supervision comparison:
+
+```text
 Original VarLen dVAE
 vs Aux artist/album loss
 vs Prefix artist/album supervision
@@ -49,11 +58,14 @@ album_id or album_cluster_id
 Recommended subset:
 
 ```text
-2k–5k users
-1M–3M interactions
-max_core_items around 10k–20k
+around 200k users
+around 20M interactions
+max_core_items around 67k
 temporal split preserved
 ```
+
+This is about 4x smaller than the full Yambda/RQ2 setup by users,
+interactions, and train+holdout SID item catalog size.
 
 Notebook:
 
@@ -67,9 +79,13 @@ Use it to inspect counts, missing metadata, users, items, and split sizes.
 
 Deliverables:
 
+* `configs/RQ_album_artist_anchor/fixed_dvae.yaml`
 * `configs/RQ_album_artist_anchor/original_varlen_dvae.yaml`
+* `configs/RQ_album_artist_anchor/seqrec_fixed.yaml`
 * `configs/RQ_album_artist_anchor/seqrec_original.yaml`
+* `results/RQ_album_artist_anchor/fixed/sids.parquet`
 * `results/RQ_album_artist_anchor/original/sids.parquet`
+* `results/RQ_album_artist_anchor/fixed/seqrec_summary.json`
 * `results/RQ_album_artist_anchor/original/seqrec_summary.json`
 
 Recommended settings:
@@ -81,7 +97,8 @@ vocab_size: 4096
 maxlen: 5
 history_budget: 128 or 256
 seqrec depth: 4
-beam_size: 20 or 50
+beam_size: 50
+k_list: [10, 50, 100]
 ```
 
 ## Phase 3 — Aux artist/album loss
@@ -158,6 +175,7 @@ Recall/NDCG from seqrec
 Core result table:
 
 ```text
+Fixed
 Original
 AuxLoss
 PrefixLoss
@@ -180,6 +198,7 @@ Recommended reproducibility path:
 ```bash
 python scripts/RQ_album_artist_anchor/build_yambda_subset.py
 python scripts/RQ_album_artist_anchor/build_artist_album_metadata.py
+python scripts/RQ_album_artist_anchor/run_experiment.py --method fixed
 python scripts/RQ_album_artist_anchor/run_experiment.py --method original
 python scripts/RQ_album_artist_anchor/run_experiment.py --method aux
 python scripts/RQ_album_artist_anchor/run_experiment.py --method prefix
@@ -217,7 +236,8 @@ Total target:
 If time is low:
 
 1. Keep `Original` and `AuxLoss` end-to-end.
-2. Run `PrefixLoss` at least for semantic-ID diagnostics.
-3. Skip extra seeds.
-4. Skip combined `AuxLoss + PrefixLoss`.
-5. Do not run REINFORCE, R-KMeans, or fixed dVAE unless everything else is done.
+2. Keep `Fixed` as at least a semantic-ID plus structural baseline.
+3. Run `PrefixLoss` at least for semantic-ID diagnostics.
+4. Skip extra seeds.
+5. Skip combined `AuxLoss + PrefixLoss`.
+6. Do not run REINFORCE or R-KMeans unless everything else is done.

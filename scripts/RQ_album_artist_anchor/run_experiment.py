@@ -6,6 +6,10 @@ import sys
 
 
 METHODS = {
+    "fixed": {
+        "dvae": "configs/RQ_album_artist_anchor/fixed_dvae.yaml",
+        "seqrec": "configs/RQ_album_artist_anchor/seqrec_fixed.yaml",
+    },
     "original": {
         "dvae": "configs/RQ_album_artist_anchor/original_varlen_dvae.yaml",
         "seqrec": "configs/RQ_album_artist_anchor/seqrec_original.yaml",

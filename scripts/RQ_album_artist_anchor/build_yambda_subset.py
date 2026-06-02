@@ -107,13 +107,16 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src-dir", default="./data/yambda")
     ap.add_argument("--dst-dir", default="./data/RQ_album_artist_anchor/yambda")
-    ap.add_argument("--num-users", type=int, default=5000)
-    ap.add_argument("--max-interactions", type=int, default=3_000_000)
-    ap.add_argument("--max-core-items", type=int, default=20_000)
+    # Full RQ2/Yambda VarLen run has about 812k pretrain users,
+    # 79M core train interactions, and 268k train+holdout SID items.
+    # These defaults target a subset that is roughly 4x smaller.
+    ap.add_argument("--num-users", type=int, default=200_000)
+    ap.add_argument("--max-interactions", type=int, default=20_000_000)
+    ap.add_argument("--max-core-items", type=int, default=67_000)
     ap.add_argument("--core-threshold", type=int, default=16)
     ap.add_argument("--holdout-frac", type=float, default=0.1)
-    ap.add_argument("--topk-head", type=int, default=5000)
-    ap.add_argument("--seqrec-test-user-fraction", type=float, default=1.0)
+    ap.add_argument("--topk-head", type=int, default=30000)
+    ap.add_argument("--seqrec-test-user-fraction", type=float, default=0.05)
     ap.add_argument("--user-selection", choices=("most_active", "random"), default="most_active")
     ap.add_argument("--test-interval", type=int, default=TEST_INTERVAL)
     ap.add_argument("--seed", type=int, default=42)

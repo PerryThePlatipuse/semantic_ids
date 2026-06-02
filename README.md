@@ -141,10 +141,10 @@ Each experiment can be reproduced by running the corresponding training script w
 
 ## 5. Course project: artist/album-aware Yambda SIDs
 
-The course-project extension compares the original VarLen dVAE against auxiliary
-artist/album loss and prefix-level artist/album supervision. It uses a reduced
-Yambda subset and hashed metadata classes so the experiment fits a single-A100
-budget.
+The course-project extension compares fixed-length dVAE, original VarLen dVAE,
+auxiliary artist/album loss, and prefix-level artist/album supervision. It uses a
+reduced Yambda subset and hashed metadata classes so the experiment fits a
+single-A100 budget.
 
 Download the original Yambda inputs and metadata:
 
@@ -162,6 +162,11 @@ python3 -m scripts.RQ_album_artist_anchor.build_yambda_subset
 python3 -m scripts.RQ_album_artist_anchor.build_artist_album_metadata
 ```
 
+The default subset is approximately 4x smaller than the full Yambda setup used in
+the original RQ2 VarLen run: up to 200k users, 20M interactions, and 67k core
+items. For a cheaper run, pass smaller `--num-users`, `--max-interactions`, and
+`--max-core-items` values.
+
 Before a full run, validate the original pipeline with the tiny configs:
 
 ```bash
@@ -172,13 +177,15 @@ python3 -m scripts.train_seqrec --config configs/RQ_album_artist_anchor/seqrec_o
 Run one method end to end:
 
 ```bash
+python3 -m scripts.RQ_album_artist_anchor.run_experiment --method fixed
 python3 -m scripts.RQ_album_artist_anchor.run_experiment --method original
 python3 -m scripts.RQ_album_artist_anchor.run_experiment --method aux
 python3 -m scripts.RQ_album_artist_anchor.run_experiment --method prefix
 ```
 
 Each runner accepts `--stages dvae,purity,seqrec`, so expensive stages can be
-rerun separately. Collect the final comparison table with:
+rerun separately. Seqrec configs report `@10`, `@50`, and `@100` metrics.
+Collect the final comparison table with:
 
 ```bash
 python3 -m scripts.RQ_album_artist_anchor.collect_results

@@ -25,16 +25,16 @@ train:
   grad_clip: 0.0
 
 eval:
-  beam_size: 20
+  beam_size: 50
   max_batch_tokens: 16384
   max_batch_users: 512
-  max_candidates: 50
+  max_candidates: 100
   per_code_max_items: 10
-  k_list: [10, 50]
+  k_list: [10, 50, 100]
   catalog_size: null
 
 min_item_count: 16
-pop_k: 5000
+pop_k: 30000
 user_start_token: 0
 sep_token: 1
 num_special_tokens: 2

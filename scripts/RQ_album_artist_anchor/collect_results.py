@@ -5,7 +5,7 @@ import json
 import os
 
 
-METHODS = ("original", "aux", "prefix")
+METHODS = ("fixed", "original", "aux", "prefix")
 SEQREC_METRICS = (
     "recall@10",
     "recall@50",
@@ -17,7 +17,17 @@ SEQREC_METRICS = (
     "coverage@50",
     "coverage@100",
     "head_recall@10",
+    "head_recall@50",
+    "head_recall@100",
+    "head_ndcg@10",
+    "head_ndcg@50",
+    "head_ndcg@100",
     "tail_recall@10",
+    "tail_recall@50",
+    "tail_recall@100",
+    "tail_ndcg@10",
+    "tail_ndcg@50",
+    "tail_ndcg@100",
     "long_tail_share",
 )
 
