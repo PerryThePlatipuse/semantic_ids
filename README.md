@@ -142,9 +142,9 @@ Each experiment can be reproduced by running the corresponding training script w
 ## 5. Course project: artist/album-aware Yambda SIDs
 
 The course-project extension compares fixed-length dVAE, original VarLen dVAE,
-auxiliary artist/album loss, and prefix-level artist/album supervision. It uses a
-reduced Yambda subset and hashed metadata classes so the experiment fits a
-single-A100 budget.
+auxiliary artist/album loss, and prefix-level artist/album supervision. By
+default it uses the same full Yambda-scale preprocessing as the paper configs,
+with hashed metadata classes and a smaller seqrec transformer.
 
 Download the original Yambda inputs and metadata:
 
@@ -155,17 +155,16 @@ download(dst_dir="./data/yambda")
 download_metadata(dst_dir="./data/yambda")
 ```
 
-Build the subset and attach artist/album labels:
+Build the project data and attach artist/album labels:
 
 ```bash
 python3 -m scripts.RQ_album_artist_anchor.build_yambda_subset
 python3 -m scripts.RQ_album_artist_anchor.build_artist_album_metadata
 ```
 
-The default subset is approximately 4x smaller than the full Yambda setup used in
-the original RQ2 VarLen run: up to 200k users, 20M interactions, and 67k core
-items. For a cheaper run, pass smaller `--num-users`, `--max-interactions`, and
-`--max-core-items` values.
+By default this keeps all users, interactions, and core items available after
+the standard Yambda temporal/core filtering. For a cheaper run, pass explicit
+`--num-users`, `--max-interactions`, and `--max-core-items` values.
 
 Before a full run, validate the original pipeline with the tiny configs:
 

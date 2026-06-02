@@ -1,0 +1,21 @@
+data_dir: "./data/RQ_album_artist_anchor/yambda"
+results_dir: "./results/RQ_album_artist_anchor"
+seqrec_base_config: "./configs/RQ_album_artist_anchor/seqrec_fixed.yaml"
+device: "cuda"
+run_seqrec: true
+
+metadata:
+  artist_col: "artist_id"
+  album_col: "album_id"
+  label_metadata_filename: "item_metadata_raw_dense_labels.parquet"
+
+experiments:
+  - name: "hier_artist_album_rq_a512_b64_r3"
+    artist_k: 512
+    album_k: 64
+    residual_levels: 3
+    residual_k: 512
+    kmeans_iters: 20
+    batch_size: 8192
+    seed: 42
+    seqrec_config: "./configs/RQ_album_artist_anchor/seqrec_hier_artist_album_rq_a512_b64_r3.yaml"

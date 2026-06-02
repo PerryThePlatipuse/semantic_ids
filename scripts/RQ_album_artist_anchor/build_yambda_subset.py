@@ -12,6 +12,8 @@ from scripts.data.yambda import TEST_INTERVAL
 
 def _select_users(interactions, user_col, num_users, selection, seed):
     user_counts = interactions.group_by(user_col).len()
+    if num_users is None or num_users <= 0:
+        return user_counts.select(user_col)
     num_users = min(num_users, user_counts.height)
     if selection == "most_active":
         return user_counts.sort(["len", user_col], descending=[True, False]).head(num_users).select(user_col)
@@ -107,12 +109,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src-dir", default="./data/yambda")
     ap.add_argument("--dst-dir", default="./data/RQ_album_artist_anchor/yambda")
-    # Full RQ2/Yambda VarLen run has about 812k pretrain users,
-    # 79M core train interactions, and 268k train+holdout SID items.
-    # These defaults target a subset that is roughly 4x smaller.
-    ap.add_argument("--num-users", type=int, default=200_000)
-    ap.add_argument("--max-interactions", type=int, default=20_000_000)
-    ap.add_argument("--max-core-items", type=int, default=67_000)
+    # By default, keep the full Yambda scale used by the paper configs.
+    # Pass positive values to build a cheaper local subset.
+    ap.add_argument("--num-users", type=int, default=None)
+    ap.add_argument("--max-interactions", type=int, default=None)
+    ap.add_argument("--max-core-items", type=int, default=None)
     ap.add_argument("--core-threshold", type=int, default=16)
     ap.add_argument("--holdout-frac", type=float, default=0.1)
     ap.add_argument("--topk-head", type=int, default=30000)
