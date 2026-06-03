@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "varlen": true,
+    "maxlen": 3,
+    "vocab_size": 256,
+    "batch_size": 128,
+    "per_step": true,
+    "expected_holdout_frac": 0.01
+  },
+  "sanity": {
+    "train_holdout_items": 268054,
+    "cold_items": 30899
+  },
+  "train_holdout": {
+    "n_items": 268054,
+    "recon_head_longtail": {
+      "head": {
+        "uniform": {
+          "@last": 0.10313803285260995,
+          "@varlen": 0.10313803285260995
+        },
+        "unigram": {
+          "@last": 0.07845730225279605,
+          "@varlen": 0.07845730225279605
+        }
+      },
+      "longtail": {
+        "uniform": {
+          "@last": 0.13707443487050588,
+          "@varlen": 0.13707443487050588
+        },
+        "unigram": {
+          "@last": 0.12790314178989914,
+          "@varlen": 0.12790314178989914
+        }
+      }
+    },
+    "recon": {
+      "uniform": {
+        "@1": 0.3943093928089526,
+        "@2": 0.20351331988065283,
+        "@3": 0.13327634921329326,
+        "@varlen": 0.13327634921329326
+      },
+      "unigram": {
+        "@1": 0.3290893292165188,
+        "@2": 0.15472199536521505,
+        "@3": 0.09097515108557538,
+        "@varlen": 0.09097515108557538
+      }
+    },
+    "codebook": {
+      "perplexity@1": 222.3002543089628,
+      "codebook_usage@1": 1.0,
+      "perplexity@2": 235.22860812829546,
+      "codebook_usage@2": 1.0,
+      "perplexity@3": 237.3660650124146,
+      "codebook_usage@3": 1.0,
+      "perplexity_macro": 231.63164248322428,
+      "codebook_usage_macro": 1.0,
+      "perplexity_micro": 239.27781661397336,
+      "codebook_usage_micro": 1.0,
+      "total_tokens_micro": 804162
+    },
+    "length": {
+      "mean_uniform": 3.0,
+      "mean_unigram": 3.0
+    },
+    "popularity_length": {
+      "pop_stats_by_length": {
+        "3": {
+          "count": 268054,
+          "pop_mean": 294.6984376282391,
+          "pop_median": 53.0,
+          "pop_std": 1232.5550688105068,
+          "pop_min": 16.0,
+          "pop_max": 82097.0
+        }
+      }
+    },
+    "head_longtail": {
+      "mean_length_head": 3.0,
+      "mean_length_longtail": 3.0,
+      "count_head": 30000,
+      "count_longtail": 238054
+    },
+    "distinctness": {
+      "n_items": 268054,
+      "n_unique_codes": 176467,
+      "unique_codes_per_item": 0.6583263073858252
+    }
+  },
+  "cold": {
+    "n_items": 30899,
+    "recon": {
+      "uniform": {
+        "@1": 0.5160071925671881,
+        "@2": 0.28872091968706376,
+        "@3": 0.19849686613514678,
+        "@varlen": 0.19849686613514678
+      },
+      "unigram": {
+        "@1": 0.3805872334431207,
+        "@2": 0.21093775662076525,
+        "@3": 0.14359733867095423,
+        "@varlen": 0.14359733867095423
+      }
+    },
+    "codebook": {
+      "perplexity@1": 156.01688218509045,
+      "codebook_usage@1": 1.0,
+      "perplexity@2": 186.14876866657812,
+      "codebook_usage@2": 1.0,
+      "perplexity@3": 201.6301897371186,
+      "codebook_usage@3": 1.0,
+      "perplexity_macro": 181.2652801962624,
+      "codebook_usage_macro": 1.0,
+      "perplexity_micro": 188.63069427934806,
+      "codebook_usage_micro": 1.0,
+      "total_tokens_micro": 92697
+    },
+    "length": {
+      "mean_uniform": 3.0,
+      "mean_unigram": 3.0
+    },
+    "popularity_length": {
+      "pop_stats_by_length": {
+        "3": {
+          "count": 30899,
+          "pop_mean": 2.5552930515550667,
+          "pop_median": 1.0,
+          "pop_std": 58.63344143453695,
+          "pop_min": 1.0,
+          "pop_max": 7063.0
+        }
+      }
+    },
+    "distinctness": {
+      "n_items": 30899,
+      "n_unique_codes": 25660,
+      "unique_codes_per_item": 0.8304475873005599
+    }
+  }
+}

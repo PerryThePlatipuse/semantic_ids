@@ -1,0 +1,12 @@
+{
+  "name": "hier_artist_album_rq_a512_b64_r3",
+  "artist_k_requested": 512,
+  "artist_k_effective": 512,
+  "album_k_per_artist_requested": 64,
+  "residual_levels": 3,
+  "residual_k": 512,
+  "sid_length": 5,
+  "num_items": 268054,
+  "num_raw_artists": 35957,
+  "num_raw_album_artist_pairs": 141411
+}

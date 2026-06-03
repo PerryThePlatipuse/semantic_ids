@@ -1,0 +1,65 @@
+{
+  "num_items": 268054,
+  "num_unique_sids": 227872,
+  "mean_sid_length": 3.296701410909742,
+  "collision_bucket_count": 12686,
+  "colliding_item_count": 52868,
+  "excess_item_collisions": 40182,
+  "mean_items_per_sid": 1.1763358376632496,
+  "p95_items_per_sid": 2.0,
+  "max_items_per_sid": 484,
+  "artist_prefix_purity": {
+    "1": {
+      "num_items": 268054,
+      "num_prefixes": 4018,
+      "purity": 0.20407082155088155
+    },
+    "2": {
+      "num_items": 245928,
+      "num_prefixes": 167225,
+      "purity": 0.7987175108161738
+    },
+    "3": {
+      "num_items": 198133,
+      "num_prefixes": 192221,
+      "purity": 0.9930854527009635
+    },
+    "4": {
+      "num_items": 126753,
+      "num_prefixes": 125204,
+      "purity": 0.9983905706373813
+    },
+    "5": {
+      "num_items": 44826,
+      "num_prefixes": 44535,
+      "purity": 0.9986837995806005
+    }
+  },
+  "album_prefix_purity": {
+    "1": {
+      "num_items": 268054,
+      "num_prefixes": 4018,
+      "purity": 0.06589716997321435
+    },
+    "2": {
+      "num_items": 245928,
+      "num_prefixes": 167225,
+      "purity": 0.7149938193292346
+    },
+    "3": {
+      "num_items": 198133,
+      "num_prefixes": 192221,
+      "purity": 0.9748249912937269
+    },
+    "4": {
+      "num_items": 126753,
+      "num_prefixes": 125204,
+      "purity": 0.9892704709158757
+    },
+    "5": {
+      "num_items": 44826,
+      "num_prefixes": 44535,
+      "purity": 0.9941328693169142
+    }
+  }
+}
