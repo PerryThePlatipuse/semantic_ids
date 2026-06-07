@@ -13,6 +13,12 @@ ITEM_FILES = (
 )
 
 
+def _dense_labels(values):
+    keys = sorted({v for v in values if v is not None}, key=str)
+    mapping = {key: idx + 1 for idx, key in enumerate(keys)}
+    return [mapping.get(v, 0) for v in values], mapping
+
+
 def _prepare_mapping(path, raw_col, cluster_col, num_classes, seed):
     mapping = pl.read_parquet(path)
     required = {"item_id", raw_col}
@@ -84,9 +90,17 @@ def main(args):
 
     metadata = pl.concat(all_items).unique(subset=["item_id"], keep="first")
     metadata.write_parquet(os.path.join(args.data_dir, "item_metadata.parquet"))
+    artist_label, artist_label_map = _dense_labels(metadata["artist_id"].to_list())
+    album_label, album_label_map = _dense_labels(metadata["album_id"].to_list())
+    metadata.select("item_id").with_columns(
+        pl.Series("artist_label", artist_label),
+        pl.Series("album_label", album_label),
+    ).write_parquet(os.path.join(args.data_dir, "item_metadata_raw_dense_labels.parquet"))
     summary = {
         "num_artist_classes": args.num_artist_classes,
         "num_album_classes": args.num_album_classes,
+        "num_raw_artist_labels": len(artist_label_map),
+        "num_raw_album_labels": len(album_label_map),
         "unknown_cluster_id": 0,
         "multi_value_policy": "minimum raw id per item",
         "splits": split_summaries,

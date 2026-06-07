@@ -5,6 +5,9 @@ import subprocess
 import sys
 
 
+PURITY_METADATA = "data/RQ_album_artist_anchor/yambda/item_metadata_raw_dense_labels.parquet"
+
+
 METHODS = {
     "fixed": {
         "dvae": "configs/RQ_album_artist_anchor/fixed_dvae.yaml",
@@ -22,6 +25,10 @@ METHODS = {
         "dvae": "configs/RQ_album_artist_anchor/prefix_artist_album_loss.yaml",
         "seqrec": "configs/RQ_album_artist_anchor/seqrec_prefix.yaml",
     },
+    "rkmeans": {
+        "rkmeans": "configs/RQ_album_artist_anchor/rkmeans.yaml",
+        "seqrec": "configs/RQ_album_artist_anchor/seqrec_rkmeans.yaml",
+    },
 }
 
 
@@ -34,12 +41,14 @@ def main(args):
     method_cfg = METHODS[args.method]
     out_dir = os.path.join("results", "RQ_album_artist_anchor", args.method)
     stages = args.stages.split(",")
-    unknown = set(stages) - {"dvae", "purity", "seqrec"}
+    unknown = set(stages) - {"dvae", "rkmeans", "purity", "seqrec"}
     if unknown:
         raise ValueError(f"unknown stages: {sorted(unknown)}")
 
-    if "dvae" in stages:
+    if "dvae" in stages and "dvae" in method_cfg:
         _run(sys.executable, "-m", "scripts.train_dvae", "--config", method_cfg["dvae"])
+    if ("rkmeans" in stages or "dvae" in stages) and "rkmeans" in method_cfg:
+        _run(sys.executable, "-m", "scripts.train_rkmeans", "--config", method_cfg["rkmeans"])
     if "purity" in stages:
         _run(
             sys.executable,
@@ -47,8 +56,14 @@ def main(args):
             "scripts.RQ_album_artist_anchor.analyze_prefix_purity",
             "--sids",
             os.path.join(out_dir, "sids.parquet"),
+            "--metadata",
+            PURITY_METADATA,
             "--output",
             os.path.join(out_dir, "prefix_purity.json"),
+            "--artist-col",
+            "artist_label",
+            "--album-col",
+            "album_label",
         )
     if "seqrec" in stages:
         _run(sys.executable, "-m", "scripts.train_seqrec", "--config", method_cfg["seqrec"])

@@ -1,0 +1,15 @@
+data_dir: "./data/RQ_album_artist_anchor/yambda"
+device: "cuda"
+seed: 42
+mode: "train_holdout"
+out_dir: "./results/RQ_album_artist_anchor/rkmeans"
+metrics_filename: "rkmeans_metrics.json"
+
+num_levels: 5
+num_clusters: 1024
+num_iters: 40
+fit_batch_size: 8192
+
+eval_batch_size: 2048
+per_step: true
+expected_holdout_frac: 0.1

@@ -8,7 +8,7 @@ mode: "train_holdout"
 out_dir: "./results/RQ_album_artist_anchor/aux"
 metrics_filename: "dvae_metrics.json"
 
-num_epochs: 3
+num_epochs: 5
 vocab_size: 4096
 embed_dim: 128
 hidden_size: 128
@@ -43,12 +43,12 @@ beta_start: 0.0
 beta_end: 0.002
 free_bits: 2.0
 
-train_sample_frac_for_eval: 0.1
+train_sample_frac_for_eval: 0.1111111111  # 1/9
 log_every_steps: 20
 eval_every_steps: 500
 eval_detail: false
 enable_progress_bar: true
 progress_bar_every: 20
-eval_batch_size: 512
+eval_batch_size: 2048
 per_step: true
 expected_holdout_frac: 0.1

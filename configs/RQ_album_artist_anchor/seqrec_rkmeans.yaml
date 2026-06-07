@@ -1,8 +1,8 @@
 data_dir: "./data/RQ_album_artist_anchor/yambda"
-semantic_ids_path: "./results/RQ_album_artist_anchor/original/sids.parquet"
+semantic_ids_path: "./results/RQ_album_artist_anchor/rkmeans/sids.parquet"
 test_interactions_path: "seqrec_test_sample_interactions.parquet"
 device: "cuda"
-summary_json: "./results/RQ_album_artist_anchor/original/seqrec_summary.json"
+summary_json: "./results/RQ_album_artist_anchor/rkmeans/seqrec_summary.json"
 
 budget_mode: "tokens"
 history_budget: 128

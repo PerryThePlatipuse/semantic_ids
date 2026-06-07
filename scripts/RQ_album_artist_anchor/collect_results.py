@@ -10,7 +10,8 @@ DEFAULT_METHODS = (
     "original",
     "aux",
     "prefix",
-    "hier_artist_album_rq_a512_b64_r3",
+    "rkmeans",
+    "hier_artist_album_rq_a1024_b64_r1024_r3",
 )
 SEQREC_METRICS = (
     "recall@10",
@@ -57,6 +58,7 @@ def main(args):
     for method in methods:
         method_dir = os.path.join(args.results_dir, method)
         dvae = _load_optional(os.path.join(method_dir, "dvae_metrics.json"))
+        rkmeans = _load_optional(os.path.join(method_dir, "rkmeans_metrics.json"))
         sid_metrics = _load_optional(os.path.join(method_dir, "sid_metrics.json"))
         seqrec = _load_optional(os.path.join(method_dir, "seqrec_summary.json"))
         purity = _load_optional(os.path.join(method_dir, "prefix_purity.json"))
@@ -65,12 +67,17 @@ def main(args):
             "method": method,
             "mean_sid_length": purity.get("mean_sid_length") if purity else None,
             "num_unique_sids": purity.get("num_unique_sids") if purity else None,
+            "collision_bucket_count": purity.get("collision_bucket_count") if purity else None,
+            "colliding_item_count": purity.get("colliding_item_count") if purity else None,
             "excess_item_collisions": purity.get("excess_item_collisions") if purity else None,
             "mean_items_per_sid": purity.get("mean_items_per_sid") if purity else None,
+            "p95_items_per_sid": purity.get("p95_items_per_sid") if purity else None,
+            "max_items_per_sid": purity.get("max_items_per_sid") if purity else None,
             "artist_prefix_purity@1": _purity_at(purity, "artist_prefix_purity", 1),
             "album_prefix_purity@1": _purity_at(purity, "album_prefix_purity", 1),
             "album_prefix_purity@2": _purity_at(purity, "album_prefix_purity", 2),
             "has_dvae_metrics": dvae is not None,
+            "has_rkmeans_metrics": rkmeans is not None,
             "has_sid_metrics": sid_metrics is not None,
             "has_seqrec_summary": seqrec is not None,
         }

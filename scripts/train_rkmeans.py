@@ -38,6 +38,10 @@ def main(cfg):
     mode = cfg.get("mode", "train")  # "train" | "train_holdout"
     id_col = cfg.get("id_col", "item_id")
 
+    torch.manual_seed(cfg.get("seed", 42))
+    if str(device).startswith("cuda"):
+        torch.cuda.manual_seed_all(cfg.get("seed", 42))
+
     train_items = pl.read_parquet(os.path.join(data_dir, "dvae_train_items.parquet"))
     holdout_items = pl.read_parquet(os.path.join(data_dir, "dvae_holdout_items.parquet"))
     cold_items = pl.read_parquet(os.path.join(data_dir, "dvae_cold_items.parquet"))
@@ -78,7 +82,7 @@ def main(cfg):
         out_dir = cfg["out_dir"]
         os.makedirs(out_dir, exist_ok=True)
 
-        metrics_path = os.path.join(out_dir, "metrics.json")
+        metrics_path = os.path.join(out_dir, cfg.get("metrics_filename", "metrics.json"))
         sids_path = os.path.join(out_dir, "sids.parquet")
 
         with open(metrics_path, "w", encoding="utf-8") as f:

@@ -10,12 +10,14 @@ metadata:
   label_metadata_filename: "item_metadata_raw_dense_labels.parquet"
 
 experiments:
-  - name: "hier_artist_album_rq_a512_b64_r3"
-    artist_k: 512
+  - name: "hier_artist_album_rq_a1024_b64_r1024_r3"
+    artist_k: 1024
+    # Local album clusters inside each artist cluster. Keep this a bottleneck:
+    # 1024 here mostly memorizes albums rather than testing useful structure.
     album_k: 64
     residual_levels: 3
-    residual_k: 512
+    residual_k: 1024
     kmeans_iters: 20
     batch_size: 8192
     seed: 42
-    seqrec_config: "./configs/RQ_album_artist_anchor/seqrec_hier_artist_album_rq_a512_b64_r3.yaml"
+    seqrec_config: "./configs/RQ_album_artist_anchor/seqrec_hier_artist_album_rq_a1024_b64_r1024_r3.yaml"

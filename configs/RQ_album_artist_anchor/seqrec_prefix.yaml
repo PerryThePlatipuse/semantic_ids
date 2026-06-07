@@ -11,7 +11,7 @@ append_unique_token: true
 
 train:
   ideal_batch_size_tokens: 65536
-  device_batch_size: 64
+  device_batch_size: 256
   depth: 4
   adam_lr: 0.008
   muon_lr: 0.06
@@ -26,8 +26,8 @@ train:
 
 eval:
   beam_size: 50
-  max_batch_tokens: 16384
-  max_batch_users: 512
+  max_batch_tokens: 32768
+  max_batch_users: 1024
   max_candidates: 100
   per_code_max_items: 10
   k_list: [10, 50, 100]

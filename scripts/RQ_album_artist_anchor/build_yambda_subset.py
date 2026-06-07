@@ -3,11 +3,117 @@ import argparse
 import json
 import math
 import os
+import shutil
 
 import polars as pl
 
 from scripts.data.utils import preprocess_data
-from scripts.data.yambda import TEST_INTERVAL
+from scripts.data.yambda import TEST_INTERVAL, main as build_paper_yambda_data
+
+
+PREPROCESSED_FILES = (
+    "dvae_train_items.parquet",
+    "dvae_holdout_items.parquet",
+    "dvae_cold_items.parquet",
+    "dvae_train_interactions.parquet",
+    "dvae_holdout_interactions.parquet",
+    "seqrec_train_interactions.parquet",
+    "seqrec_test_interactions.parquet",
+    "seqrec_test_sample_interactions.parquet",
+)
+
+
+def _is_full_paper_scale(args):
+    return (
+        args.num_users is None
+        and args.max_interactions is None
+        and args.max_core_items is None
+        and args.core_threshold == 16
+        and args.holdout_frac == 0.1
+        and args.topk_head == 30000
+        and args.seqrec_test_user_fraction == 0.05
+        and args.test_interval == TEST_INTERVAL
+        and args.seed == 42
+    )
+
+
+def _copy_preprocessed_paper_data(args):
+    required = list(PREPROCESSED_FILES) + ["embeddings.parquet"]
+    missing = [name for name in required if not os.path.exists(os.path.join(args.src_dir, name))]
+    if missing:
+        return False
+
+    os.makedirs(args.dst_dir, exist_ok=True)
+    for name in required:
+        shutil.copy2(os.path.join(args.src_dir, name), os.path.join(args.dst_dir, name))
+
+    raw_interactions = os.path.join(args.src_dir, "interactions.parquet")
+    if os.path.exists(raw_interactions):
+        shutil.copy2(raw_interactions, os.path.join(args.dst_dir, "subset_interactions.parquet"))
+
+    summary = {
+        "src_dir": args.src_dir,
+        "dst_dir": args.dst_dir,
+        "mode": "copied_preprocessed_paper_data",
+        "copied_files": required,
+        "seed": args.seed,
+    }
+    with open(os.path.join(args.dst_dir, "subset_summary.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print(f"Copied paper-preprocessed Yambda files from {args.src_dir} to {args.dst_dir}")
+    return True
+
+
+def _build_full_with_paper_pipeline(args):
+    os.makedirs(args.dst_dir, exist_ok=True)
+    build_paper_yambda_data(
+        data_dir=args.src_dir,
+        dst_dir=args.dst_dir,
+        core_threshold=args.core_threshold,
+        holdout_frac=args.holdout_frac,
+        seed=args.seed,
+        topk_head=args.topk_head,
+    )
+
+    embeddings_path = os.path.join(args.src_dir, "embeddings.parquet")
+    if os.path.exists(embeddings_path):
+        shutil.copy2(embeddings_path, os.path.join(args.dst_dir, "embeddings.parquet"))
+
+    seqrec_test_path = os.path.join(args.dst_dir, "seqrec_test_interactions.parquet")
+    seqrec_test = pl.read_parquet(seqrec_test_path)
+    sampled_users = (
+        seqrec_test.select("user_id")
+        .unique()
+        .sample(fraction=args.seqrec_test_user_fraction, shuffle=True, seed=args.seed)
+    )
+    seqrec_test.join(sampled_users, on="user_id", how="semi").write_parquet(
+        os.path.join(args.dst_dir, "seqrec_test_sample_interactions.parquet")
+    )
+
+    raw_interactions = os.path.join(args.src_dir, "interactions.parquet")
+    summary = {
+        "src_dir": args.src_dir,
+        "dst_dir": args.dst_dir,
+        "mode": "paper_pipeline",
+        "seed": args.seed,
+    }
+    if os.path.exists(raw_interactions):
+        interactions = pl.read_parquet(raw_interactions)
+        user_col = "uid" if "uid" in interactions.columns else "user_id"
+        if user_col != "user_id":
+            interactions = interactions.rename({user_col: "user_id"})
+        interactions.write_parquet(os.path.join(args.dst_dir, "subset_interactions.parquet"))
+        summary.update(
+            {
+                "num_users": interactions["user_id"].n_unique(),
+                "num_interactions": interactions.height,
+                "num_items": interactions["item_id"].n_unique(),
+            }
+        )
+
+    with open(os.path.join(args.dst_dir, "subset_summary.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print(f"Built full Yambda project data with the paper preprocessing path into {args.dst_dir}")
 
 
 def _select_users(interactions, user_col, num_users, selection, seed):
@@ -36,6 +142,11 @@ def _cap_interactions(interactions, user_col, max_interactions):
 
 
 def main(args):
+    if _is_full_paper_scale(args):
+        if not _copy_preprocessed_paper_data(args):
+            _build_full_with_paper_pipeline(args)
+        return
+
     os.makedirs(args.dst_dir, exist_ok=True)
     interactions = pl.read_parquet(os.path.join(args.src_dir, "interactions.parquet"))
     embeddings = pl.read_parquet(os.path.join(args.src_dir, "embeddings.parquet"))
