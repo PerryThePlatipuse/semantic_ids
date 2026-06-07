@@ -46,6 +46,44 @@ def _mean_scalar(df: pl.DataFrame) -> float:
     return float(df.item())
 
 
+def _subset_candidates(candidates: Dict[int, List[int]], user_ids: set) -> Dict[int, List[int]]:
+    return {uid: cand for uid, cand in candidates.items() if uid in user_ids}
+
+
+def _history_length_bins(history_df: pl.DataFrame) -> Dict[str, Dict[str, Any]]:
+    if history_df.height == 0:
+        return {}
+
+    history_rows = (
+        history_df
+        .select("user_id", "history_events")
+        .sort(["history_events", "user_id"])
+    )
+    rows = [
+        (int(user_id), int(history_events))
+        for user_id, history_events in history_rows.iter_rows()
+    ]
+    n = len(rows)
+    first = n // 3
+    second = (2 * n) // 3
+    chunks = {
+        "short": rows[:first],
+        "medium": rows[first:second],
+        "long": rows[second:],
+    }
+    out = {}
+    for name, chunk in chunks.items():
+        values = [history_events for _, history_events in chunk]
+        out[name] = {
+            "user_ids": {user_id for user_id, _ in chunk},
+            "n_users": len(chunk),
+            "min_history_events": min(values) if values else None,
+            "max_history_events": max(values) if values else None,
+            "mean_history_events": float(sum(values) / len(values)) if values else None,
+        }
+    return out
+
+
 @torch.no_grad()
 def cast_modules_to_bf16(m: nn.Module) -> None:
     for mod in m.modules():
@@ -197,7 +235,8 @@ def run_eval(
         test_df: pl.DataFrame,
         targets_df: pl.DataFrame,     # columns: user_id, item_id(list[int])
         head_items_df: pl.DataFrame,  # column: item_id
-) -> Dict[str, float]:
+        history_df: pl.DataFrame,     # columns: user_id, history_events
+) -> Dict[str, Any]:
     max_seq_len = int(stats["pretrain_max_len_observed"])
     vocab_size = int(stats["vocab_size"])
 
@@ -315,6 +354,26 @@ def run_eval(
         for key, value in calculate_metrics(candidates, tail_targets, k=k).items():
             metrics[f"tail_{key}@{k}"] = float(value)
 
+    by_history_length = {}
+    for bin_name, bin_info in _history_length_bins(history_df).items():
+        user_ids = bin_info["user_ids"]
+        bin_targets = targets_df.filter(pl.col("user_id").is_in(list(user_ids)))
+        bin_candidates = _subset_candidates(candidates, user_ids)
+        bin_metrics = {
+            key: value
+            for key, value in bin_info.items()
+            if key != "user_ids"
+        }
+        for k in k_list:
+            unique_candidates = set()
+            for cand in bin_candidates.values():
+                unique_candidates.update(cand[:k])
+            bin_metrics[f"coverage@{k}"] = len(unique_candidates) / catalog_size
+            for key, value in calculate_metrics(bin_candidates, bin_targets, k=k).items():
+                bin_metrics[f"{key}@{k}"] = float(value)
+        by_history_length[bin_name] = bin_metrics
+    metrics["by_history_length"] = by_history_length
+
     return metrics
 
 
@@ -324,6 +383,7 @@ def build_dataframes_and_stats(cfg: Dict[str, Any]) -> Tuple[
         pl.DataFrame,  # processed_semantic_ids (item_id, sid:list[int], length)
         pl.DataFrame,  # head_items_df (item_id)
         pl.DataFrame,  # targets_df (user_id, item_id:list[int])
+        pl.DataFrame,  # history_df (user_id, history_events)
         Dict[str, Any],  # stats
 ]:
     data_dir = require(cfg, "data_dir")
@@ -516,6 +576,17 @@ def build_dataframes_and_stats(cfg: Dict[str, Any]) -> Tuple[
         .drop("target_time")
     )
 
+    history_df = (
+        users_test
+        .join(
+            prefix.group_by(user_col).len().rename({"len": "history_events"}),
+            on=user_col,
+            how="left",
+        )
+        .with_columns(pl.col("history_events").fill_null(0).cast(pl.Int64))
+        .select(pl.col(user_col).alias("user_id"), "history_events")
+    )
+
     if budget_mode == "events":
         test_hist = tail_events(prefix, test_events_budget)
         test_hist_sids = test_hist.join(
@@ -611,7 +682,8 @@ def build_dataframes_and_stats(cfg: Dict[str, Any]) -> Tuple[
         test_df.select(["uid", "token_id"]), 
         processed_semantic_ids, 
         head_items_df, 
-        targets_df, 
+        targets_df,
+        history_df,
         stats
     )
 
@@ -620,7 +692,7 @@ def main(cfg):
     configure_torch()
 
     # 1) build dfs + stats in-memory
-    pretrain_df, test_df, processed_semantic_ids, head_items_df, targets_df, stats = build_dataframes_and_stats(cfg)
+    pretrain_df, test_df, processed_semantic_ids, head_items_df, targets_df, history_df, stats = build_dataframes_and_stats(cfg)
 
     # 2) train
     graph = run_train(cfg, stats, pretrain_df)
@@ -634,6 +706,7 @@ def main(cfg):
         test_df=test_df.rename({"uid": "uid"}),  # keep same
         targets_df=targets_df,
         head_items_df=head_items_df,
+        history_df=history_df,
     )
 
     result = {
