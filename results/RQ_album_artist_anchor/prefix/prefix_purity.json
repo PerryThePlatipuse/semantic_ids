@@ -1,65 +1,65 @@
 {
   "num_items": 268054,
-  "num_unique_sids": 221619,
-  "mean_sid_length": 3.589470778276019,
-  "collision_bucket_count": 13752,
-  "colliding_item_count": 60187,
-  "excess_item_collisions": 46435,
-  "mean_items_per_sid": 1.2095262590301372,
+  "num_unique_sids": 219089,
+  "mean_sid_length": 3.5421482238653406,
+  "collision_bucket_count": 14262,
+  "colliding_item_count": 63227,
+  "excess_item_collisions": 48965,
+  "mean_items_per_sid": 1.2234936486998433,
   "p95_items_per_sid": 2.0,
-  "max_items_per_sid": 594,
+  "max_items_per_sid": 744,
   "artist_prefix_purity": {
     "1": {
       "num_items": 268054,
-      "num_prefixes": 4078,
-      "purity": 0.2588359061980049
+      "num_prefixes": 4080,
+      "purity": 0.2579704089474509
     },
     "2": {
-      "num_items": 247535,
-      "num_prefixes": 110269,
-      "purity": 0.6296281333952775
+      "num_items": 247013,
+      "num_prefixes": 110709,
+      "purity": 0.6297239416548926
     },
     "3": {
-      "num_items": 211488,
-      "num_prefixes": 187296,
-      "purity": 0.9401479043728249
+      "num_items": 203136,
+      "num_prefixes": 181524,
+      "purity": 0.9439341131064902
     },
     "4": {
-      "num_items": 159164,
-      "num_prefixes": 155327,
-      "purity": 0.9940061823025307
+      "num_items": 155034,
+      "num_prefixes": 151693,
+      "purity": 0.9948462917811577
     },
     "5": {
-      "num_items": 75931,
-      "num_prefixes": 75163,
-      "purity": 0.9983274288498769
+      "num_items": 76250,
+      "num_prefixes": 75477,
+      "purity": 0.9982295081967213
     }
   },
   "album_prefix_purity": {
     "1": {
       "num_items": 268054,
-      "num_prefixes": 4078,
-      "purity": 0.07926387966603744
+      "num_prefixes": 4080,
+      "purity": 0.077663455870832
     },
     "2": {
-      "num_items": 247535,
-      "num_prefixes": 110269,
-      "purity": 0.502373401741168
+      "num_items": 247013,
+      "num_prefixes": 110709,
+      "purity": 0.5039856201900305
     },
     "3": {
-      "num_items": 211488,
-      "num_prefixes": 187296,
-      "purity": 0.9005948328037524
+      "num_items": 203136,
+      "num_prefixes": 181524,
+      "purity": 0.907205025204789
     },
     "4": {
-      "num_items": 159164,
-      "num_prefixes": 155327,
-      "purity": 0.9795682440752934
+      "num_items": 155034,
+      "num_prefixes": 151693,
+      "purity": 0.9814750312834604
     },
     "5": {
-      "num_items": 75931,
-      "num_prefixes": 75163,
-      "purity": 0.9909786516705956
+      "num_items": 76250,
+      "num_prefixes": 75477,
+      "purity": 0.9909377049180328
     }
   }
 }

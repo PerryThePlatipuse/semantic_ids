@@ -47,15 +47,15 @@
     "user_start_token": 0
   },
   "metrics": {
-    "coverage@10": 0.016384758294970415,
-    "head_ndcg@10": 0.02024012221842615,
-    "head_recall@10": 0.029781420765027378,
-    "long_tail_share": 0.16851627833587712,
+    "coverage@10": 0.017925492624620412,
+    "head_ndcg@10": 0.024112167503972815,
+    "head_recall@10": 0.03459927017164486,
+    "long_tail_share": 0.1717456477147158,
     "mean_candidate_sid_length": 4.0,
-    "ndcg@10": 0.008238881179004634,
-    "recall@10": 0.012359964234997084,
-    "tail_ndcg@10": 0.0007259174905957234,
-    "tail_recall@10": 0.0014538612845292097,
+    "ndcg@10": 0.010338343436325498,
+    "recall@10": 0.015147530636932582,
+    "tail_ndcg@10": 0.001563371482087288,
+    "tail_recall@10": 0.0027552953332185223,
     "unique_sids_per_user": 5.0
   },
   "stats": {
@@ -66,7 +66,7 @@
     "history_budget_total": 64,
     "item_col": "item_id",
     "min_item_count": 16,
-    "n_test_interactions_after_core": 134826,
+    "n_test_interactions_after_core": 130704,
     "n_train_interactions_after_core": 78995095,
     "n_users_pretrain": 812012,
     "n_users_test": 19013,
@@ -80,8 +80,8 @@
     "sid_len_max": 4,
     "sid_stream_len_max": 4,
     "target_col": "target",
-    "test_avg_len_events": 13.271523530975804,
-    "test_avg_len_tokens": 53.505338452637666,
+    "test_avg_len_events": 13.316320033955858,
+    "test_avg_len_tokens": 53.80302950612739,
     "test_history_budget": 59,
     "test_max_len_observed": 57,
     "test_path": "./data/RQ_album_artist_anchor/yambda/seqrec_test_sample_interactions.parquet",
@@ -94,6 +94,6 @@
     "unique_token_offset": 258,
     "user_col": "user_id",
     "user_start_token": 0,
-    "vocab_size": 788
+    "vocab_size": 538
   }
 }
