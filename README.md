@@ -22,7 +22,6 @@ Some optional acceleration libraries (`xformers`, `triton`) may require a compat
 Preprocessing the Amazon dataset requires downloading pretrained text models and computing EmbeddingGemma embeddings.
 Please authenticate with Hugging Face:
 
-
 ```bash
 huggingface-cli login
 ```
@@ -196,7 +195,7 @@ Project configs live under `configs/RQ_album_artist_anchor/`. Outputs are writte
 ### 5.1 Prefix dropout experiment
 
 Prefix dropout is a training-time augmentation for seqrec. It randomly truncates
-SID sequences to their first `keep` codes with probability `p`, forcing the model
+SID sequences to their first keep codes with probability p, forcing the model
 to generalize from coarse prefixes. The dVAE is **not** retrained — both baseline
 and dropout runs use the same `original/sids.parquet`.
 
@@ -218,4 +217,3 @@ Results are written to `results/RQ_album_artist_anchor/prefix_dropout/`.
 **Note:** On GPUs with ≤16 GB memory (e.g. NVIDIA L4), the training script
 automatically reduces batch sizes. The comparison remains fair as long as both
 baseline and dropout use the same reduced settings.
-
