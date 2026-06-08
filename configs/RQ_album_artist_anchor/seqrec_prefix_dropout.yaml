@@ -1,0 +1,48 @@
+data_dir: "./data/RQ_album_artist_anchor/yambda"
+semantic_ids_path: "./results/RQ_album_artist_anchor/original/sids.parquet"
+test_interactions_path: "seqrec_test_sample_interactions.parquet"
+device: "cuda"
+summary_json: "./results/RQ_album_artist_anchor/prefix_dropout/seqrec_summary.json"
+
+prefix_dropout_prob: 0.2
+prefix_dropout_keep: 1
+
+budget_mode: "tokens"
+history_budget: 128
+flatten_codebooks: false
+append_unique_token: true
+
+train:
+  ideal_batch_size_tokens: 65536
+  device_batch_size: 256
+  depth: 4
+  adam_lr: 0.008
+  muon_lr: 0.06
+  weight_decay: 0.0
+  warmdown_ratio: 0.45
+  final_lr_frac: 0.1
+  tf32: true
+  matmul_precision: "high"
+  compile: true
+  compile_dynamic: false
+  grad_clip: 0.0
+
+eval:
+  beam_size: 50
+  max_batch_tokens: 32768
+  max_batch_users: 1024
+  max_candidates: 100
+  per_code_max_items: 10
+  k_list: [10, 50, 100]
+  catalog_size: null
+
+min_item_count: 16
+pop_k: 30000
+user_start_token: 0
+sep_token: 1
+num_special_tokens: 2
+seed: 42
+target_col: "target"
+time_col: "timestamp"
+user_col: "user_id"
+item_col: "item_id"
