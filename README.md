@@ -192,3 +192,30 @@ python3 -m scripts.RQ_album_artist_anchor.collect_results
 
 Project configs live under `configs/RQ_album_artist_anchor/`. Outputs are written to
 `results/RQ_album_artist_anchor/<method>/`.
+
+### 5.1 Prefix dropout experiment
+
+Prefix dropout is a training-time augmentation for seqrec. It randomly truncates
+SID sequences to their first `keep` codes with probability `p`, forcing the model
+to generalize from coarse prefixes. The dVAE is **not** retrained — both baseline
+and dropout runs use the same `original/sids.parquet`.
+
+Run the baseline (same config but without dropout, `p=0`):
+
+```bash
+python3 -m scripts.train_seqrec --config configs/RQ_album_artist_anchor/seqrec_original.yaml
+```
+
+Run prefix dropout (`p=0.2, keep=1`):
+
+```bash
+python3 -m scripts.RQ_album_artist_anchor.train_seqrec_prefix_dropout \
+    --config configs/RQ_album_artist_anchor/seqrec_prefix_dropout.yaml
+```
+
+Results are written to `results/RQ_album_artist_anchor/prefix_dropout/`.
+
+**Note:** On GPUs with ≤16 GB memory (e.g. NVIDIA L4), the training script
+automatically reduces batch sizes. The comparison remains fair as long as both
+baseline and dropout use the same reduced settings.
+
