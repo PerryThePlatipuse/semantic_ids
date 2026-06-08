@@ -1,16 +1,14 @@
 import os
 import math
 
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-
 import torch
-import torch._dynamo as dynamo
 import torch.nn.functional as F
 from torch import Tensor, nn
 
 
 def norm(x: Tensor):
-    return F.rms_norm(x, (x.size(-1),))
+    rms = x.pow(2).mean(-1, keepdim=True).add(1e-5).rsqrt()
+    return x * rms
 
 
 class Yarn(nn.Module):
@@ -26,11 +24,11 @@ class Yarn(nn.Module):
         angular_freq = torch.cat([angular_freq, angular_freq.new_zeros(self.head_dim//4)])
         t = torch.arange(self.max_seq_len, dtype=torch.float32, device='cuda')
         theta = torch.outer(t, angular_freq)
-        self.cos = nn.Buffer(
-            theta.cos().to(torch.bfloat16), persistent=False
+        self.register_buffer(
+            'cos', theta.cos().to(torch.bfloat16), persistent=False
         )
-        self.sin = nn.Buffer(
-            theta.sin().to(torch.bfloat16), persistent=False
+        self.register_buffer(
+            'sin', theta.sin().to(torch.bfloat16), persistent=False
         )
         self.angular_freq = angular_freq
         self.attn_scale = 0.1
@@ -91,8 +89,12 @@ class CausalSelfAttention(nn.Module):
         q, k, v = self._qkv(x, cos_sin)  # [B, T, nH, Hd]
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)  # [B, nH, T, Hd]
 
+        # Manual scaling (scale= kwarg not available in PyTorch 2.0)
+        if scale is not None:
+            q = q * (scale ** 0.5)
+            k = k * (scale ** 0.5)
         y = F.scaled_dot_product_attention(
-            q, k, v, is_causal=self.causal, scale=scale
+            q, k, v, is_causal=self.causal
         )  # [B, nH, T, Hd]
         y = y.transpose(1, 2)  # [B, T, nH, Hd]
         y = y.contiguous().view(B, T, self.num_heads * self.head_dim)  # [B, T, D]

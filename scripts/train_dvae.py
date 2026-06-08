@@ -3,11 +3,21 @@ import argparse
 import json
 import os
 
+# PyTorch 2.0.1 compatibility: remove expandable_segments
+os.environ.pop("PYTORCH_CUDA_ALLOC_CONF", None)
+
 import yaml
 import polars as pl
 import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
+
+# PyTorch 2.0.1: torch.compile is too buggy, disable it
+def _no_compile(model=None, **kwargs):
+    if model is not None:
+        return model
+    return lambda fn: fn
+torch.compile = _no_compile
 
 from lib.data import EventsDataset
 from lib.utils import get_cosine_scheduler, configure_torch, encode_to_sids_df

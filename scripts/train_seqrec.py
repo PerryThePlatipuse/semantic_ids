@@ -6,10 +6,19 @@ from typing import Any, Dict, List, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
 
+# PyTorch 2.0.1 compatibility
+os.environ.pop("PYTORCH_CUDA_ALLOC_CONF", None)
+
 import numpy as np
 import polars as pl
 import pyarrow.parquet as pq
 import torch
+def _no_compile(model=None, **kwargs):
+    if model is not None:
+        return model
+    return lambda fn: fn
+torch.compile = _no_compile  # disable broken compile on 2.0.1
+
 import torch.nn as nn
 import torch.nn.functional as F
 import tqdm

@@ -7,6 +7,18 @@ import torch.nn.functional as F
 from .gpt import GPT
 
 
+# Polyfill for PyTorch < 2.4 (nn.RMSNorm was added in 2.4)
+if not hasattr(nn, 'RMSNorm'):
+    class _RMSNorm(nn.Module):
+        def __init__(self, normalized_shape, eps=1e-5):
+            super().__init__()
+            self.weight = nn.Parameter(torch.ones(normalized_shape))
+            self.eps = eps
+        def forward(self, x):
+            return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps) * self.weight
+    nn.RMSNorm = _RMSNorm
+
+
 class Encoder(nn.Module):
     def __init__(
             self,
