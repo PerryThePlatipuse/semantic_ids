@@ -10,7 +10,8 @@ from torch import Tensor
 
 
 def norm(x: Tensor):
-    return F.rms_norm(x, (x.size(-1),))
+    rms = x.pow(2).mean(-1, keepdim=True).add(1e-5).rsqrt()
+    return x * rms
 
 
 class KVCacheFast:
@@ -96,8 +97,8 @@ class Yarn(nn.Module):
         angular_freq = torch.cat([angular_freq, angular_freq.new_zeros(self.head_dim // 4)])
         t = torch.arange(self.max_seq_len, dtype=torch.float32, device="cuda")
         theta = torch.outer(t, angular_freq)
-        self.cos = nn.Buffer(theta.cos().to(torch.bfloat16), persistent=False)
-        self.sin = nn.Buffer(theta.sin().to(torch.bfloat16), persistent=False)
+        self.register_buffer('cos', theta.cos().to(torch.bfloat16), persistent=False)
+        self.register_buffer('sin', theta.sin().to(torch.bfloat16), persistent=False)
         self.angular_freq = angular_freq
         self.attn_scale = 0.1
 
@@ -163,7 +164,11 @@ class CausalSelfAttention(nn.Module):
         q, k, v = self._qkv(x, cos_sin)
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
 
-        y = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal, scale=scale)
+        # Manual scaling (scale= kwarg not available in PyTorch 2.0)
+        if scale is not None:
+            sq = scale ** 0.5
+            q, k = q * sq, k * sq
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal)
         y = y.transpose(1, 2).contiguous().view(B, T, self.hdim)
         y = F.linear(y, self.qkvo_w.view(4, self.hdim, self.dim)[3].type_as(y))
         return y
@@ -174,7 +179,10 @@ class CausalSelfAttention(nn.Module):
         q, k, v = self._qkv(x, cos_sin)
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
 
-        y = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal, scale=scale)
+        if scale is not None:
+            sq = scale ** 0.5
+            q, k = q * sq, k * sq
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal)
         y = y.transpose(1, 2).contiguous().view(B, T, self.hdim)
         y = F.linear(y, self.qkvo_w.view(4, self.hdim, self.dim)[3].type_as(y))
         kv = (k, v) if need_kv else None
@@ -192,8 +200,13 @@ class CausalSelfAttention(nn.Module):
         pos = int(kv_cache.cur_pos)
         k_total, v_total = kv_cache.get_kv_slice_upto(self.layer_idx, pos_inclusive=pos)
 
+        # Manual scaling for decode (scale= kwarg not in PyTorch 2.0)
+        if scale is not None:
+            sq = scale ** 0.5
+            q = q * sq
+            k_total = k_total * sq
         y = F.scaled_dot_product_attention(
-            q, k_total, v_total, attn_mask=None, is_causal=False, scale=scale
+            q, k_total, v_total, attn_mask=None, is_causal=False
         )
         y = y.transpose(1, 2).contiguous().view(B, 1, self.hdim)
         y = F.linear(y, self.qkvo_w.view(4, self.hdim, self.dim)[3].type_as(y))
