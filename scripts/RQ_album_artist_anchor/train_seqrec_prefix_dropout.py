@@ -89,7 +89,7 @@ def apply_prefix_dropout(pretrain_df, stats, cfg):
 def main(cfg):
     configure_torch()
 
-    pretrain_df, test_df, processed_sids, head_items_df, targets_df, stats = \
+    pretrain_df, test_df, processed_sids, head_items_df, targets_df, history_df, stats = \
         build_dataframes_and_stats(cfg)
 
     pretrain_df = apply_prefix_dropout(pretrain_df, stats, cfg)
@@ -111,6 +111,7 @@ def main(cfg):
         test_df=test_df,
         targets_df=targets_df,
         head_items_df=head_items_df,
+        history_df=history_df,
     )
 
     result = {"metrics": metrics, "stats": stats, "cfg": cfg}
