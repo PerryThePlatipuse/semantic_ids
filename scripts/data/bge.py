@@ -26,8 +26,8 @@ def build_item_text(items: pl.DataFrame,
 
     texts = [
         " | ".join([
-            safe_str(row.get("artist")),
-            safe_str(row.get("album")),
+            safe_str(row.get("artist_id")),
+            safe_str(row.get("album_id")),
         ]).strip() or "unknown item"
         for row in df.iter_rows(named=True)
     ]
