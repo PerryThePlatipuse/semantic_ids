@@ -5,6 +5,9 @@ import io
 import json
 import os
 import re
+import sys
+import types
+from importlib.machinery import ModuleSpec
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
@@ -28,6 +31,35 @@ DEFAULT_ENCODERS = (
     "minilm_l6=sentence-transformers/all-MiniLM-L6-v2",
     "bge_small=BAAI/bge-small-en-v1.5",
 )
+
+
+def _install_transformers_optional_dependency_stubs() -> None:
+    """Avoid broken optional deps that transformers imports but encoder inference does not use."""
+
+    def unavailable(*args, **kwargs):
+        raise RuntimeError("Optional dependency stub called during text embedding inference")
+
+    if "sklearn.metrics" not in sys.modules:
+        sklearn = types.ModuleType("sklearn")
+        sklearn.__spec__ = ModuleSpec("sklearn", loader=None, is_package=True)
+        sklearn.__path__ = []
+
+        metrics = types.ModuleType("sklearn.metrics")
+        metrics.__spec__ = ModuleSpec("sklearn.metrics", loader=None)
+        metrics.roc_curve = unavailable
+
+        sklearn.metrics = metrics
+        sys.modules.setdefault("sklearn", sklearn)
+        sys.modules.setdefault("sklearn.metrics", metrics)
+
+    for name in ("soxr", "librosa", "soundfile"):
+        if name not in sys.modules:
+            module = types.ModuleType(name)
+            module.__spec__ = ModuleSpec(name, loader=None)
+            module.resample = unavailable
+            module.load = unavailable
+            module.read = unavailable
+            sys.modules[name] = module
 
 
 def _slugify(value: str) -> str:
@@ -220,6 +252,7 @@ def _encode_one(
     item_ids: List[str],
     args: argparse.Namespace,
 ) -> pl.DataFrame:
+    _install_transformers_optional_dependency_stubs()
     from transformers import AutoModel, AutoTokenizer
 
     print(f"\nEncoding {name}: {model_id}")

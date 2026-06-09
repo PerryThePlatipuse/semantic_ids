@@ -150,10 +150,16 @@ def _build_test_sample(data_dir: Path, user_fraction: float, seed: int) -> None:
     src = data_dir / "seqrec_test_interactions.parquet"
     dst = data_dir / "seqrec_test_sample_interactions.parquet"
     test = pl.read_parquet(src)
+    if test.height == 0:
+        test.write_parquet(dst)
+        print(f"Saved {dst}: 0 rows, 0 users")
+        return
+    n_users = test["user_id"].n_unique()
+    sample_n = max(1, int(np.ceil(n_users * user_fraction)))
     users = (
         test.select("user_id")
         .unique()
-        .sample(fraction=user_fraction, shuffle=True, seed=seed)
+        .sample(n=min(sample_n, n_users), shuffle=True, seed=seed)
     )
     sampled = test.join(users, on="user_id", how="semi")
     sampled.write_parquet(dst)

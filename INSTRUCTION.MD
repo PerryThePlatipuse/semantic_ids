@@ -109,6 +109,7 @@ python3 -m scripts.RQ_encoder_comparison.run_encoder_experiment \
   --results-dir results/RQ_encoder_comparison_amazon_toys_smoke \
   --dvae-config configs/RQ_encoder_comparison/amazon_toys_fixed_dvae.yaml \
   --seqrec-config configs/RQ_encoder_comparison/seqrec_amazon_toys_fixed.yaml \
+  --test-interval-days 365 \
   --stages prepare,dvae,sid_metrics \
   --max-users 1000 \
   --max-core-items 5000 \
@@ -125,6 +126,7 @@ python3 -m scripts.RQ_encoder_comparison.run_encoder_experiment \
   --results-dir results/RQ_encoder_comparison_amazon_toys \
   --dvae-config configs/RQ_encoder_comparison/amazon_toys_fixed_dvae.yaml \
   --seqrec-config configs/RQ_encoder_comparison/seqrec_amazon_toys_fixed.yaml \
+  --test-interval-days 365 \
   --stages prepare,dvae,sid_metrics,seqrec \
   --max-users 5000 \
   --max-core-items 30000
