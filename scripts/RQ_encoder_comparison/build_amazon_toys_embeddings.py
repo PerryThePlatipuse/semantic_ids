@@ -12,7 +12,15 @@ from typing import Dict, Iterable, List, Tuple
 import numpy as np
 import polars as pl
 import torch
+import torch.nn.functional as F
 from tqdm.auto import tqdm
+
+
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_FLAX", "0")
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+os.environ.setdefault("TRANSFORMERS_NO_FLAX", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 
 DEFAULT_ENCODERS = (
@@ -212,25 +220,43 @@ def _encode_one(
     item_ids: List[str],
     args: argparse.Namespace,
 ) -> pl.DataFrame:
-    from sentence_transformers import SentenceTransformer
+    from transformers import AutoModel, AutoTokenizer
 
     print(f"\nEncoding {name}: {model_id}")
-    model = SentenceTransformer(model_id, trust_remote_code=args.trust_remote_code)
     device = args.device
     if device == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    with torch.inference_mode():
-        embeddings = model.encode(
-            texts,
-            batch_size=args.batch_size,
-            show_progress_bar=True,
-            normalize_embeddings=True,
-            convert_to_numpy=True,
-            device=device,
-        )
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=args.trust_remote_code)
+    model = AutoModel.from_pretrained(model_id, trust_remote_code=args.trust_remote_code)
+    model = model.to(device)
+    model.eval()
 
-    embeddings = np.asarray(embeddings, dtype=np.float32)
+    chunks = []
+    with torch.inference_mode():
+        for start in tqdm(range(0, len(texts), args.batch_size), desc=f"encode {name}", dynamic_ncols=True):
+            batch_texts = texts[start:start + args.batch_size]
+            encoded = tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=args.max_length,
+                return_tensors="pt",
+            )
+            encoded = {key: value.to(device, non_blocking=True) for key, value in encoded.items()}
+            with torch.autocast(
+                device_type="cuda",
+                dtype=torch.bfloat16,
+                enabled=str(device).startswith("cuda"),
+            ):
+                output = model(**encoded)
+                token_embeddings = output.last_hidden_state
+                mask = encoded["attention_mask"].unsqueeze(-1).to(token_embeddings.dtype)
+                emb = (token_embeddings * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+                emb = F.normalize(emb.float(), dim=-1)
+            chunks.append(emb.cpu().numpy().astype(np.float32, copy=False))
+
+    embeddings = np.concatenate(chunks, axis=0)
     if embeddings.ndim != 2:
         raise ValueError(f"{name} embeddings must be 2D, got {embeddings.shape}")
     dim = int(embeddings.shape[1])
@@ -314,6 +340,7 @@ if __name__ == "__main__":
     ap.add_argument("--hf-token-env", default="HF_TOKEN")
     ap.add_argument("--device", default="auto")
     ap.add_argument("--batch-size", type=int, default=256)
+    ap.add_argument("--max-length", type=int, default=256)
     ap.add_argument("--trust-remote-code", action="store_true")
     ap.add_argument("--reuse-prepared", action="store_true")
     ap.add_argument("--reuse-embeddings", action="store_true")

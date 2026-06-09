@@ -78,6 +78,7 @@ python3 -m scripts.RQ_encoder_comparison.build_amazon_toys_embeddings \
   --max-users 5000 \
   --max-interactions 3000000 \
   --batch-size 256 \
+  --max-length 256 \
   --reuse-prepared \
   --reuse-embeddings
 ```
