@@ -2,7 +2,7 @@
 import os
 import json
 from os.path import join
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Hashable, List, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -55,7 +55,7 @@ def _mean_scalar(df: pl.DataFrame) -> float:
     return float(df.item())
 
 
-def _subset_candidates(candidates: Dict[int, List[int]], user_ids: set) -> Dict[int, List[int]]:
+def _subset_candidates(candidates: Dict[Hashable, List[Hashable]], user_ids: set) -> Dict[Hashable, List[Hashable]]:
     return {uid: cand for uid, cand in candidates.items() if uid in user_ids}
 
 
@@ -69,7 +69,7 @@ def _history_length_bins(history_df: pl.DataFrame) -> Dict[str, Dict[str, Any]]:
         .sort(["history_events", "user_id"])
     )
     rows = [
-        (int(user_id), int(history_events))
+        (user_id, int(history_events))
         for user_id, history_events in history_rows.iter_rows()
     ]
     n = len(rows)
@@ -275,14 +275,14 @@ def run_eval(
 
     code2items = defaultdict(list)
     for item_id, code in processed_semantic_ids.select("item_id", "sid").iter_rows():
-        code2items[tuple(code)].append(int(item_id))
+        code2items[tuple(code)].append(item_id)
 
     max_candidates = require(cfg, "eval.max_candidates")
     per_code_max_items = require(cfg, "eval.per_code_max_items")
 
     mean_sid_len = 0.0
     mean_sid_len_cnt = 0
-    candidates: Dict[int, List[int]] = {}
+    candidates: Dict[Hashable, List[Hashable]] = {}
 
     for uids, token_lists in tqdm.tqdm(
         iter_length_buckets(
@@ -301,7 +301,7 @@ def run_eval(
         codes_per_user = beam_search(tokens_BT)
 
         for uid, codes in zip(uids, codes_per_user):
-            uid_candidates: List[int] = []
+            uid_candidates: List[Hashable] = []
 
             for c in codes:
                 key = tuple(c)
@@ -317,7 +317,7 @@ def run_eval(
                 if len(uid_candidates) >= max_candidates:
                     break
 
-            candidates[int(uid)] = uid_candidates
+            candidates[uid] = uid_candidates
 
     head_items_set = set(head_items_df["item_id"].to_list())
 

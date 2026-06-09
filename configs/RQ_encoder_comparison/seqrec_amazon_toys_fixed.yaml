@@ -1,8 +1,8 @@
-data_dir: "./data/RQ_encoder_comparison/amazon/example_encoder"
-semantic_ids_path: "./results/RQ_encoder_comparison/example_encoder/sids.parquet"
+data_dir: "./data/RQ_encoder_comparison/amazon_toys/example_encoder"
+semantic_ids_path: "./results/RQ_encoder_comparison_amazon_toys/example_encoder/sids.parquet"
 test_interactions_path: "seqrec_test_sample_interactions.parquet"
 device: "cuda"
-summary_json: "./results/RQ_encoder_comparison/example_encoder/seqrec_summary.json"
+summary_json: "./results/RQ_encoder_comparison_amazon_toys/example_encoder/seqrec_summary.json"
 
 budget_mode: "tokens"
 history_budget: 128

@@ -1,16 +1,16 @@
-data_dir: "./data/RQ_encoder_comparison/amazon/example_encoder"
+data_dir: "./data/RQ_encoder_comparison/amazon_toys/example_encoder"
 train_interactions_file: "dvae_train_interactions.parquet"
 holdout_interactions_file: "dvae_holdout_interactions.parquet"
 
 device: "cuda"
 seed: 42
 mode: "train_holdout"
-out_dir: "./results/RQ_encoder_comparison/example_encoder"
+out_dir: "./results/RQ_encoder_comparison_amazon_toys/example_encoder"
 metrics_filename: "dvae_metrics.json"
 
-num_epochs: 3
+num_epochs: 5
 vocab_size: 4096
-embed_dim: 128
+embed_dim: 384
 hidden_size: 128
 maxlen: 5
 shared_codebooks: true
@@ -20,8 +20,7 @@ dropout: 0.1
 codebook_dropout: 0.1
 decoder_hidden_mul: 2
 decoder_num_layers: 2
-varlen: true
-length_cost: 3.0
+varlen: false
 
 batch_num_tokens: 8192
 shuffle: true

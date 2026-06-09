@@ -14,8 +14,8 @@ import yaml
 from scripts.data.utils import preprocess_data
 
 
-DEFAULT_DVAE_CONFIG = "configs/RQ_encoder_comparison/amazon_varlen_dvae_light.yaml"
-DEFAULT_SEQREC_CONFIG = "configs/RQ_encoder_comparison/seqrec_amazon_light.yaml"
+DEFAULT_DVAE_CONFIG = "configs/RQ_encoder_comparison/amazon_toys_fixed_dvae.yaml"
+DEFAULT_SEQREC_CONFIG = "configs/RQ_encoder_comparison/seqrec_amazon_toys_fixed.yaml"
 SECONDS_PER_DAY = 24 * 60 * 60
 
 
@@ -276,8 +276,8 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="Run Amazon encoder comparison experiment")
-    ap.add_argument("--interactions", default="./data/amazon/interactions.parquet")
+    ap = argparse.ArgumentParser(description="Run fixed-dVAE + seqrec encoder comparison")
+    ap.add_argument("--interactions", default="./data/amazon_toys_encoders/interactions.parquet")
     ap.add_argument("--embedding", action="append", default=[], help="Encoder spec: name=path.parquet. May be repeated.")
     ap.add_argument("--embeddings-dir", default=None, help="Directory with *.parquet embedding files.")
 
@@ -290,8 +290,8 @@ if __name__ == "__main__":
     ap.add_argument("--embedding-item-col", default=None)
     ap.add_argument("--embedding-col", default=None)
 
-    ap.add_argument("--work-data-dir", default="./data/RQ_encoder_comparison/amazon")
-    ap.add_argument("--results-dir", default="./results/RQ_encoder_comparison")
+    ap.add_argument("--work-data-dir", default="./data/RQ_encoder_comparison/amazon_toys")
+    ap.add_argument("--results-dir", default="./results/RQ_encoder_comparison_amazon_toys")
     ap.add_argument("--dvae-config", default=DEFAULT_DVAE_CONFIG)
     ap.add_argument("--seqrec-config", default=DEFAULT_SEQREC_CONFIG)
     ap.add_argument("--stages", default="prepare,dvae,sid_metrics,seqrec")
