@@ -68,17 +68,22 @@ def train_loop(
 
     writer = _make_summary_writer(log_dir)
         
-    train_dataloader_iterator = iter(train_dataloader)
-    batch = next(train_dataloader_iterator)
-
     if checkpoint_every is not None:
         assert checkpoint_dir is not None
     if checkpoint_dir is not None and not os.path.exists(checkpoint_dir):
         os.mkdir(checkpoint_dir)
+    if num_iterations <= 0:
+        raise ValueError(
+            f"num_iterations must be positive, got {num_iterations}. "
+            "Increase the training data size or reduce train.device_batch_size / train.ideal_batch_size_tokens."
+        )
 
     tokens_passed = 0
-    for step in tqdm.tqdm(range(num_iterations - 1), total=num_iterations - 1):
-        last_step = step == num_iterations - 2
+    train_dataloader_iterator = iter(train_dataloader)
+    batch = next(train_dataloader_iterator)
+
+    for step in tqdm.tqdm(range(num_iterations), total=num_iterations):
+        last_step = step == num_iterations - 1
         if eval_every != -1 and (last_step or step % eval_every == 0):
             assert valid_dataloaders is not None or custom_validation is not None
             graph.eval()
@@ -99,7 +104,7 @@ def train_loop(
         dt = 0.
         train_loss = 0.
         curr_batch_tokens_passed = 0
-        for _ in range(grad_accum_steps):
+        for accum_step in range(grad_accum_steps):
             curr_batch_tokens_passed += batch.size # inputs.numel()
             with torch.autocast('cuda', torch.bfloat16):
                 loss = graph(batch, with_metrics=False)
@@ -108,7 +113,8 @@ def train_loop(
             loss.backward()
 
             t0 = time.time()
-            batch = next(train_dataloader_iterator) # prefetch the next batch while the GPU is busy with forward/backward
+            if not (last_step and accum_step == grad_accum_steps - 1):
+                batch = next(train_dataloader_iterator) # prefetch the next batch while the GPU is busy with forward/backward
             t1 = time.time()
             dt += (t1 - t0) / grad_accum_steps
         tokens_passed += curr_batch_tokens_passed

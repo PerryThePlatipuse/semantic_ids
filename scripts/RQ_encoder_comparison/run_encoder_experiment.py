@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
+import numpy as np
 import polars as pl
 import yaml
 

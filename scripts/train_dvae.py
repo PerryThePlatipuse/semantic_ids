@@ -20,11 +20,23 @@ def _no_compile(model=None, **kwargs):
 torch.compile = _no_compile
 
 from lib.data import EventsDataset
-from lib.utils import get_cosine_scheduler, configure_torch, encode_to_sids_df
+from lib.utils import get_cosine_scheduler, encode_to_sids_df
 from lib.layers import Encoder, Decoder
 from lib.game import Game, VarlenGame
 from lib.evaluate import evaluate_all, evaluate_for_tb
 import lib.evaluate as ev
+
+try:
+    from lib.utils import configure_torch
+except ImportError:
+    def configure_torch():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.set_float32_matmul_precision("high")
+        torch.backends.cudnn.benchmark = True
+
+        os.environ.setdefault("TORCH_LOGS", "recompiles")
+        os.environ.setdefault("TORCHDYNAMO_VERBOSE", "1")
 
 
 def main(cfg):

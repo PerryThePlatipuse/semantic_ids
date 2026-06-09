@@ -30,7 +30,18 @@ from lib.seqrec.utils import train_loop, step_optimizers
 from lib.seqrec.beam_search import BeamSearchVarLen, KVCacheGPT, iter_length_buckets
 from lib.seqrec.evaluate import calculate_metrics
 from lib.seqrec.data import SeqrecDataset, SeqrecBatch
-from lib.utils import configure_torch
+
+try:
+    from lib.utils import configure_torch
+except ImportError:
+    def configure_torch():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.set_float32_matmul_precision("high")
+        torch.backends.cudnn.benchmark = True
+
+        os.environ.setdefault("TORCH_LOGS", "recompiles")
+        os.environ.setdefault("TORCHDYNAMO_VERBOSE", "1")
 
 
 
